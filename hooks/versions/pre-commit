@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Setup parents and fill index in data repository to reflect this version
+# repository.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+data_repo=../data
+
+delete=`git diff --cached --diff-filter=D --name-only`
+add=`git diff --cached --diff-filter=AM --name-only`
+
+cd $data_repo
+
+# TODO: Checkout corresponding commit.
+# TODO: Setup other parents in case of merge.
+# TODO: Assert that index and local tree are clean
+
+git rm $delete
+for file in $add; do
+  cd - > /dev/null
+  version=`git show :0:$file`
+  cd - > /dev/null
+  # TODO: Put version $version of file $file in data repository.
+  # For now we emulate this by the following line.
+  echo "$file;$version" > $file
+done
+git add $add
+
+# Commit in post-commit hook
+
