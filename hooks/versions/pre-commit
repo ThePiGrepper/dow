@@ -2,30 +2,62 @@
 #
 # Setup parents and fill index in data repository to reflect this version
 # repository.
-#
-# To enable this hook, rename this file to "pre-commit".
+# Note: Untested.
 
 data_repo=../data
+versions_repo=../versions
+map=../map
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
+head_commit=`git rev-parse --quiet --verify HEAD`
+has_head=$?
+head=`cat .git/HEAD`
+
+if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
+  echo 'Detached HEAD. Aborting.'
+fi
+
+branch=${head:16}
 
 cd $data_repo
 
-# TODO: Checkout corresponding commit.
-# TODO: Setup other parents in case of merge.
-# TODO: Assert that index and local tree are clean
+if $has_head; then
+  against=`cat $map/${head_commit:0:2}/${head_commit:2}`
+else
+  # Initial commit: diff against an empty tree object.
+  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
+fi
+
+# Assert that index and local tree are clean.
+if ! git diff-index --quiet --cached $against; then
+  echo 'Index not clean. Aborting.'
+  exit 1;
+elif ! git diff-files --quiet; then
+  echo 'Working area not clean. Aborting.'
+  exit 1;
+fi
+
+# Checkout and setup merge heads.
+git checkout $branch
+if [ -e $versions_repo/.git/MERGE_HEAD ]; then
+  > .git/MERGE_HEAD
+  while read -r p; do
+    cat $map/${p:0:2}/${p:2} >> .git/MERGE_HEAD || \
+    { echo "Could not found commit corresponding to $p." && exit 1; }
+  done
+fi
 
 git rm $delete
 for file in $add; do
-  cd - > /dev/null
+  cd "$versions_repo"
   version=`git show :0:$file`
-  cd - > /dev/null
+  cd "$data_repo"
   # TODO: Put version $version of file $file in data repository.
   # For now we emulate this by the following line.
   echo "$file;$version" > $file
 done
 git add $add
 
-# Commit in post-commit hook
+# Commit in post-commit hook.
 

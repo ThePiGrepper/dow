@@ -1,0 +1,19 @@
+#!/bin/sh
+#
+# Apply commit to data repository.
+
+# Index and parents setup in pre-commit hook.
+
+data_repo=../data
+
+message=`git log -1 --format=format:%B HEAD`
+GIT_AUTHOR_NAME=`git log -1 --format=format:%an HEAD`
+GIT_AUTHOR_EMAIL=`git log -1 --format=format:%ae HEAD`
+GIT_AUTHOR_DATE=`git log -1 --format=format:%ad HEAD`
+GIT_COMMITTER_NAME=`git log -1 --format=format:%cn HEAD`
+GIT_COMMITTER_EMAIL=`git log -1 --format=format:%ce HEAD`
+# Use default GIT_COMMITTER_DATE.
+
+cd $data_repo
+git commit -m "$message"
+
