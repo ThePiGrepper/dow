@@ -5,6 +5,9 @@
 # Index and parents setup in pre-commit hook.
 
 data_repo=../data
+map=../map
+
+versions_sha=`git rev-parse HEAD`
 
 message=`git log -1 --format=format:%B HEAD`
 GIT_AUTHOR_NAME=`git log -1 --format=format:%an HEAD`
@@ -16,4 +19,12 @@ GIT_COMMITTER_EMAIL=`git log -1 --format=format:%ce HEAD`
 
 cd $data_repo
 git commit -m "$message" --no-verify
+
+data_sha=`git rev-parse HEAD`
+
+# Add commit pair to database.
+cd $map
+mkdir -p ${data_sha:0:2} ${versions_sha:0:2}
+echo $versions_sha > ${data_sha:0:2}/${data_sha:2}
+echo $data_sha > ${versions_sha:0:2}/${versions_sha:2}
 
