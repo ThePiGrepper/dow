@@ -11,7 +11,7 @@ map=../map
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
 head_commit=`git rev-parse --quiet --verify HEAD`
-has_head=$?
+has_head=$? # 0 mean yes.
 head=`cat .git/HEAD`
 
 if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
@@ -22,7 +22,7 @@ branch=${head:16}
 
 cd $data_repo
 
-if $has_head; then
+if [ $has_head -eq 0 ]; then
   against=`cat $map/${head_commit:0:2}/${head_commit:2}`
 else
   # Initial commit: diff against an empty tree object.
@@ -48,16 +48,22 @@ if [ -e $versions_repo/.git/MERGE_HEAD ]; then
   done
 fi
 
-git rm $delete
+if [ -n "$delete" ]; then
+  git rm $delete
+fi
+
 for file in $add; do
   cd "$versions_repo"
   version=`git show :0:$file`
   cd "$data_repo"
+  mkdir -p $(dirname $file)
   # TODO: Put version $version of file $file in data repository.
   # For now we emulate this by the following line.
   echo "$file;$version" > $file
 done
-git add $add
+if [ -n "$add" ]; then
+  git add $add
+fi
 
 # Commit in post-commit hook.
 
