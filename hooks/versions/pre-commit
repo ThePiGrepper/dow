@@ -10,8 +10,8 @@ map=../map
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
-head_commit=`git rev-parse --quiet --verify HEAD`
-has_head=$? # 0 mean yes.
+versions_head_commit=`git rev-parse --quiet --verify HEAD`
+versions_has_head=$? # 0 mean yes.
 head=`cat .git/HEAD`
 
 if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
@@ -22,8 +22,12 @@ branch=${head:16}
 
 cd $data_repo
 
-if [ $has_head -eq 0 ]; then
-  against=`cat $map/${head_commit:0:2}/${head_commit:2}`
+if [ $versions_has_head -eq 0 ]; then
+  against=`cat $map/${versions_head_commit:0:2}/${versions_head_commit:2}`
+  if ! [ $? -eq 0 ]; then
+    echo "Could not find data commit corresponding to versions commit $versions_head_commit."
+    exit 1
+  fi
 else
   # Initial commit: diff against an empty tree object.
   against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
@@ -42,11 +46,27 @@ fi
 if git rev-parse --quiet --verify $branch; then
   git checkout $branch
 else
-  if [ $has_head -eq 0 ]; then
+  if [ $versions_has_head -eq 0 ]; then
     git checkout -b $branch $against
   else
     git checkout --orphan $branch
     git rm -rf .
+  fi
+fi
+
+# Assert that the branch is synchronized.
+data_head_commit=`git rev-parse --quiet --verify HEAD`
+data_has_head=$? # 0 mean yes.
+if [ $versions_has_head -eq 0 ]; then
+  if ! [ ($data_has_head -eq 0) -a ("$data_head_commit" -eq "$against") ]; then
+    echo "Branch $branch not synchronized."
+    echo "In data, expected $against, but found $data_head_commit."
+    exit 1
+  fi
+else
+  if [ $data_has_head -eq 0 ]; then
+    echo "Branch $branch not synchronized."
+    echo "In data, expected first commit, but found HEAD=$data_head_commit."
   fi
 fi
 
