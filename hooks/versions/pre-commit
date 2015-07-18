@@ -112,10 +112,12 @@ if [ -e $versions_repo/.git/MERGE_MODE ]; then
   cp $versions_repo/.git/MERGE_MODE .git/
 fi
 
+# Apply removes.
 if [ -n "$delete" ]; then
   git rm $delete
 fi
 
+# Apply additions and modifications.
 for file in $add; do
   cd "$versions_repo"
   version=`git show :0:$file`
