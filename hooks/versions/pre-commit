@@ -39,7 +39,17 @@ elif ! git diff-files --quiet; then
 fi
 
 # Checkout and setup merge heads.
-git checkout $branch
+if git rev-parse --quiet --verify $branch; then
+  git checkout $branch
+else
+  if [ $has_head -eq 0 ]; then
+    git checkout -b $branch $against
+  else
+    git checkout --orphan $branch
+    git rm -rf .
+  fi
+fi
+
 if [ -e $versions_repo/.git/MERGE_HEAD ]; then
   > .git/MERGE_HEAD
   while read -r p; do
