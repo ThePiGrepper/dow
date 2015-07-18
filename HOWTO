@@ -1,0 +1,29 @@
+Initializing a Mirrored Repository
+
+$ mkdir <test-dir>
+$ cd <test-dir>
+$ ln -s <path-to-gm_draft> gm_draft
+$ ./gm_draft/gm-init.sh
+
+
+Generating Synchronization Commits
+
+Go to versions repository (<test-dir>/versions).
+Create files. Fill them with imaginary version numbers.
+Commit as usual.
+Generate more commits.
+Try creating new (possibly orphan) branches.
+
+
+Generating Synchronization Merges
+
+Just use the option --no-commit when invoking git-merge. Then commit with
+git-commit, so that the commit hooks are invoked.
+
+
+Expected Results
+
+Data repository (<test-dir>/data) should contain a history isomorph to the one
+in the versions repository. File contents in the data repository should reflect
+the version numbers used as file contents in the versions repository.
+
