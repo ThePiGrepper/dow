@@ -24,13 +24,11 @@ fi
 # Checkout.
 if git rev-parse --quiet --verify $branch; then
   git checkout $branch
+elif [ $source_has_head -eq 0 ]; then
+  git checkout -b $branch $mapped_head_commit
 else
-  if [ $source_has_head -eq 0 ]; then
-    git checkout -b $branch $mapped_head_commit
-  else
-    git checkout --orphan $branch
-    git rm -rf .
-  fi
+  git checkout --orphan $branch
+  git rm -rf .
 fi
 
 # Assert that the branch is synchronized.
