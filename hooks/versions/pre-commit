@@ -5,7 +5,6 @@
 
 data_repo=../data
 versions_repo=../versions
-map=../map
 utils=../utils
 
 delete=`git diff --cached --diff-filter=D --name-only`
@@ -29,9 +28,8 @@ if ! $utils/check_clean_status.sh; then
 fi
 
 if [ $versions_has_head -eq 0 ]; then
-  data_head_commit=`cat $map/${versions_head_commit:0:2}/${versions_head_commit:2}`
+  data_head_commit=`$utils/data_from_versions.sh $versions_head_commit`
   if ! [ $? -eq 0 ]; then
-    echo "Could not find data commit corresponding to versions commit $versions_head_commit."
     exit 1
   fi
 fi
@@ -80,8 +78,7 @@ fi
 if [ -e $versions_repo/.git/MERGE_HEAD ]; then
   > .git/MERGE_HEAD
   while read -r p; do
-    cat $map/${p:0:2}/${p:2} >> .git/MERGE_HEAD || \
-    { echo "Could not found commit corresponding to $p." && exit 1; }
+    $utils/data_from_versions.sh $p >> .git/MERGE_HEAD || exit 1
   done < $versions_repo/.git/MERGE_HEAD
 else
   rm -f .git/MERGE_HEAD
