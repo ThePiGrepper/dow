@@ -18,7 +18,7 @@ GIT_COMMITTER_EMAIL=`git log -1 --format=format:%ce HEAD`
 # Use automatic GIT_COMMITTER_DATE.
 
 cd $data_repo
-git commit -m "$message" --no-verify
+git commit -m "$message" --no-verify --allow-empty
 
 data_sha=`git rev-parse HEAD`
 
