@@ -6,6 +6,7 @@
 data_repo=../data
 versions_repo=../versions
 map=../map
+utils=../utils
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
@@ -22,20 +23,9 @@ branch=${head:16}
 
 cd $data_repo
 
-if git rev-parse --quiet --verify HEAD; then
-  against=HEAD
-else
-  # Initial commit: diff against an empty tree object.
-  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
-fi
-
-# Assert that index and local tree are clean.
-if ! git diff-index --quiet --cached $against; then
-  echo 'Index not clean. Aborting.'
-  exit 1;
-elif ! git diff-files --quiet; then
-  echo 'Working area not clean. Aborting.'
-  exit 1;
+if ! $utils/check_clean_status.sh; then
+  echo 'Data repository status not clean.'
+  exit 1
 fi
 
 if [ $versions_has_head -eq 0 ]; then
@@ -80,20 +70,10 @@ else
   fi
 fi
 
-if git rev-parse --quiet --verify HEAD; then
-  against=HEAD
-else
-  # Initial commit: diff against an empty tree object.
-  against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
-fi
-
-# Assert that index and local tree are still clean after checkout.
-if ! git diff-index --quiet --cached $against; then
-  echo 'Index not clean. Aborting.'
-  exit 1;
-elif ! git diff-files --quiet; then
-  echo 'Working area not clean. Aborting.'
-  exit 1;
+# Assert that status is still clean after checkout.
+if ! $utils/check_clean_status.sh; then
+  echo 'Data repository status not clean.'
+  exit 1
 fi
 
 # Translate MERGE_HEAD.
