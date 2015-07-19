@@ -28,7 +28,7 @@ if ! $utils/check_clean_status.sh; then
 fi
 
 if [ $versions_has_head -eq 0 ]; then
-  data_head_commit=`$utils/data_from_versions.sh $versions_head_commit`
+  data_head_commit=`$utils/map_lookup.sh $versions_head_commit`
   if ! [ $? -eq 0 ]; then
     exit 1
   fi
@@ -78,7 +78,7 @@ fi
 if [ -e $versions_repo/.git/MERGE_HEAD ]; then
   > .git/MERGE_HEAD
   while read -r p; do
-    $utils/data_from_versions.sh $p >> .git/MERGE_HEAD || exit 1
+    $utils/map_lookup.sh $p >> .git/MERGE_HEAD || exit 1
   done < $versions_repo/.git/MERGE_HEAD
 else
   rm -f .git/MERGE_HEAD
