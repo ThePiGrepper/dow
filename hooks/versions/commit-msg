@@ -1,0 +1,40 @@
+#!/bin/sh
+#
+# Fill index in data repository to reflect this version repository.
+
+msg_file=$1
+
+data_repo=../data
+versions_repo=../versions
+cvs_cmd=../cvs_cmd
+
+delete=`git diff --cached --diff-filter=D --name-only`
+add=`git diff --cached --diff-filter=AM --name-only`
+
+# Anticipate abort on empty message
+stripped=`grep -v '^#' "$msg_file"`
+if [[ "$stripped" =~ ^[[:space:]]*$ ]]; then
+  echo 'Aborting commit due to empty commit message.'
+  exit 1
+fi
+
+cd $data_repo
+
+# Apply removes.
+if [ -n "$delete" ]; then
+  git rm $delete
+fi
+
+# Apply additions and modifications.
+cd "$versions_repo"
+for file in $add; do
+  version=`git show :0:$file`
+  $cvs_cmd/co.sh $file $version
+done
+cd "$data_repo"
+if [ -n "$add" ]; then
+  git add $add
+fi
+
+# Commit in post-commit hook.
+

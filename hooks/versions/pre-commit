@@ -1,15 +1,11 @@
 #!/bin/sh
 #
-# Setup parents and fill index in data repository to reflect this version
-# repository.
+# Checkout branch and setup parents in data repository. Assert coherency.
 
 data_repo=../data
 versions_repo=../versions
 utils=../utils
-cvs_cmd=../cvs_cmd
 
-delete=`git diff --cached --diff-filter=D --name-only`
-add=`git diff --cached --diff-filter=AM --name-only`
 versions_head_commit=`git rev-parse --quiet --verify HEAD`
 versions_has_head=$? # 0 means yes.
 head=`cat .git/HEAD`
@@ -26,22 +22,4 @@ cd $data_repo
 if ! $utils/git_checkout.sh $branch $versions_repo $versions_has_head $versions_head_commit; then
   exit 1
 fi
-
-# Apply removes.
-if [ -n "$delete" ]; then
-  git rm $delete
-fi
-
-# Apply additions and modifications.
-cd "$versions_repo"
-for file in $add; do
-  version=`git show :0:$file`
-  $cvs_cmd/co.sh $file $version
-done
-cd "$data_repo"
-if [ -n "$add" ]; then
-  git add $add
-fi
-
-# Commit in post-commit hook.
 
