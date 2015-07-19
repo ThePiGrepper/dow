@@ -6,6 +6,7 @@
 data_repo=../data
 versions_repo=../versions
 utils=../utils
+cvs_cmd=../cvs_cmd
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
@@ -32,15 +33,12 @@ if [ -n "$delete" ]; then
 fi
 
 # Apply additions and modifications.
+cd "$versions_repo"
 for file in $add; do
-  cd "$versions_repo"
   version=`git show :0:$file`
-  cd "$data_repo"
-  mkdir -p $(dirname $file)
-  # TODO: Put version $version of file $file in data repository.
-  # For now we emulate this by the following line.
-  echo "$file;$version" > $file
+  $cvs_cmd/co.sh $file $version
 done
+cd "$data_repo"
 if [ -n "$add" ]; then
   git add $add
 fi

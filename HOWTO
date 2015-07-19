@@ -3,7 +3,7 @@ Initializing a Mirrored Repository
 $ mkdir <test-dir>
 $ cd <test-dir>
 $ ln -s <path-to-gm_draft> gm_draft
-$ ./gm_draft/gm-init.sh
+$ ./gm_draft/gm-init.sh mock
 
 
 Generating Synchronization Commits
