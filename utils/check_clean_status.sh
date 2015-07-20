@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Check if index and local tree are clean.
 

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Checkout and setup merge heads according to source.
 

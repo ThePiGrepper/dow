@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Fill index in data repository to reflect this version repository.
 

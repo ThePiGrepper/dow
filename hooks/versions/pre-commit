@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Checkout branch and setup parents in data repository. Assert coherency.
 

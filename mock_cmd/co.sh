@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Copy contents of file $1, version $2, into data repository.
 

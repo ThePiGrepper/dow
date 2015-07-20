@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Lookup commit corresponding to the one given in the map.
 

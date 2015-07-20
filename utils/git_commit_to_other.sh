@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Apply commit to repository $1, copying info from HEAD of the current one.
 
