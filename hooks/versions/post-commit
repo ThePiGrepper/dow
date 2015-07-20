@@ -5,7 +5,7 @@
 # Index and parents setup in pre-commit hook.
 
 data_repo=../data
-map=../map
+utils=../utils
 
 versions_sha=`git rev-parse HEAD`
 
@@ -22,9 +22,5 @@ git commit -m "$message" --no-verify --allow-empty
 
 data_sha=`git rev-parse HEAD`
 
-# Add commit pair to database.
-cd $map
-mkdir -p ${data_sha:0:2} ${versions_sha:0:2}
-echo $versions_sha > ${data_sha:0:2}/${data_sha:2}
-echo $data_sha > ${versions_sha:0:2}/${versions_sha:2}
+$utils/map_store.sh $versions_sha $data_sha
 
