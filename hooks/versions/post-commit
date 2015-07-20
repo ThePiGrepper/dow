@@ -7,8 +7,10 @@
 data_repo=../data
 utils=../utils
 
-
-$utils/git_commit_to_other.sh $data_repo
+if [ -e ../synchronization_commit ]; then
+  rm ../synchronization_commit
+  $utils/git_commit_to_other.sh $data_repo
+fi
 
 versions_sha=`git rev-parse HEAD`
 cd $data_repo
