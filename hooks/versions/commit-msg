@@ -20,20 +20,29 @@ fi
 
 cd $data_repo
 
-# Apply removes.
-if [ -n "$delete" ]; then
-  git rm $delete
-fi
-
 # Apply additions and modifications.
 cd "$versions_repo"
+cvs_fail=0
 for file in $add; do
   version=`git show :0:$file`
-  $cvs_cmd/co.sh $file $version
+  if ! $cvs_cmd/co.sh $file $version; then
+    cvs_fail=1
+  fi
 done
 cd "$data_repo"
 if [ -n "$add" ]; then
+  if [ $cvs_fail -ne 0 ]; then
+    # CVS failure: Rollback changes to working tree and abort.
+    rm -f $add
+    git checkout -- .
+    exit 1
+  fi
   git add $add
+fi
+
+# Apply removes.
+if [ -n "$delete" ]; then
+  git rm $delete
 fi
 
 # Commit in post-commit hook.
