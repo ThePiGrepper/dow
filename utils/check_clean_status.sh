@@ -9,6 +9,9 @@ else
   against=4b825dc642cb6eb9a060e54bf8d69288fbee4904
 fi
 
+# Avoid some "false positives" caused by mismatching stat(2) information.
+git update-index -q --refresh
+
 if ! git diff-index --quiet --cached $against; then
   # Index has changes.
   exit 1;
