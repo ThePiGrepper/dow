@@ -10,10 +10,13 @@ else
 fi
 
 if ! git diff-index --quiet --cached $against; then
-  # Index not clean
+  # Index has changes.
   exit 1;
 elif ! git diff-files --quiet; then
-  # Working area not clean
+  # Working tree has changes.
+  exit 1;
+elif [ -n "`git ls-files --others --exclude-standard`" ]; then
+  # There are untracked unignored files.
   exit 1;
 fi
 
