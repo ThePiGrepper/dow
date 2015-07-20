@@ -27,3 +27,10 @@ Data repository (<test-dir>/data) should contain a history isomorph to the one
 in the versions repository. File contents in the data repository should reflect
 the version numbers used as file contents in the versions repository.
 
+
+Known Issues
+
+* Commits with files given on the command line (e.g. "git commit -- file") are
+  not supported. Apply the changes to the index and then commit without these
+  arguments.
+
