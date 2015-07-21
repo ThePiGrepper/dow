@@ -34,7 +34,7 @@ if [ -n "$add" ]; then
   if [ $cvs_fail -ne 0 ]; then
     # CVS failure: Rollback changes to working tree and abort.
     rm -f $add
-    git checkout -- .
+    git checkout -- . 2> /dev/null
     exit 1
   fi
   git add $add

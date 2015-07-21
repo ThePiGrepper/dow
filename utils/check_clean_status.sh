@@ -2,7 +2,7 @@
 #
 # Check if index and local tree are clean.
 
-if git rev-parse --quiet --verify HEAD; then
+if git rev-parse --quiet --verify HEAD > /dev/null; then
   against=HEAD
 else
   # Initial commit: diff against an empty tree object.
