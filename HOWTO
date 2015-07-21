@@ -6,13 +6,19 @@ $ ln -s <path-to-gm_draft> gm_draft
 $ ./gm_draft/gm-init.sh mock
 
 
+Generating Modification Commits
+
+Go to data repository (<test-dir>/data).
+Commit and branch as usual (merges not supported).
+
+
 Generating Synchronization Commits
 
 Go to versions repository (<test-dir>/versions).
-Create files. Fill them with imaginary version numbers.
-Commit as usual.
-Generate more commits.
-Try creating new (possibly orphan) branches.
+Create files. Fill them with valid version numbers.
+  * Inspect the mock repository (<test-dir>/mock_repo) to see what versions are
+    available for each file.
+Commit and branch as usual.
 
 
 Generating Synchronization Merges
@@ -25,7 +31,8 @@ Expected Results
 
 Data repository (<test-dir>/data) should contain a history isomorph to the one
 in the versions repository. File contents in the data repository should reflect
-the version numbers used as file contents in the versions repository.
+the version numbers used as file contents in the versions repository, as mapped
+by the mock repository.
 
 
 Known Issues
@@ -33,4 +40,6 @@ Known Issues
 * Commits with files given on the command line (e.g. "git commit -- file") are
   not supported. Apply the changes to the index and then commit without these
   arguments.
+
+* Modification merges are not currently supported.
 
