@@ -8,8 +8,8 @@
 
 cd ../mock_repo
 for file in "$@"; do
-  if [ -e "$file" ]; then
-    tail -n 1 "$file"
+  if [ -e "$file/log" ]; then
+    tail -n 1 "$file/log"
   else
     echo A1.0
   fi
