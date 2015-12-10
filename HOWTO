@@ -1,23 +1,23 @@
 Initializing a Mirrored Repository
 
-$ mkdir <test-dir>
-$ cd <test-dir>
+$ mkdir <mirror-dir>
+$ cd <mirror-dir>
 $ ln -s <path-to-gm_draft> gm_draft
 $ ./gm_draft/gm-init.sh mock
 
 
 Generating Modification Commits
 
-Go to data repository (<test-dir>/data).
+Go to data repository (<mirror-dir>/data).
 Commit and branch as usual (merges not supported).
 
 
 Generating Synchronization Commits
 
-Go to versions repository (<test-dir>/versions).
+Go to versions repository (<mirror-dir>/versions).
 Create files. Fill them with valid version numbers.
-  * Inspect the mock repository (<test-dir>/mock_repo) to see what versions are
-    available for each file.
+  * Inspect the mock repository (<mirror-dir>/mock_repo) to see what versions
+    are available for each file.
 Commit and branch as usual.
 
 
@@ -29,7 +29,7 @@ git-commit, so that the commit hooks are invoked.
 
 Expected Results
 
-Data repository (<test-dir>/data) should contain a history isomorph to the one
+Data repository (<mirror-dir>/data) should contain a history isomorph to the one
 in the versions repository. File contents in the data repository should reflect
 the version numbers used as file contents in the versions repository, as mapped
 by the mock repository.
