@@ -3,7 +3,12 @@ Initializing a Mirrored Repository
 $ mkdir <mirror-dir>
 $ cd <mirror-dir>
 $ ln -s <this-dir> srcdir
-$ ./srcdir/dow-init.sh mock
+$ ./srcdir/dow-init.sh cvs
+$ echo "CVS.ROOTPATH=<cvs-root-path>" > config
+$ echo "CVS.MODULEPATH=<cvs-root-path>/<module>" >> config
+$ cd cvs_repo
+$ export CVS_ROOT=<cvs-root-path>
+$ cvs checkout <module> # as desired
 
 
 Generating Modification Commits
@@ -16,7 +21,7 @@ Generating Synchronization Commits
 
 Go to versions repository (<mirror-dir>/versions).
 Create files. Fill them with valid version numbers.
-  * Inspect the mock repository (<mirror-dir>/mock_repo) to see what versions
+  * Inspect the CVS repository (<mirror-dir>/cvs_repo) to see what versions
     are available for each file.
 Commit and branch as usual.
 
@@ -25,6 +30,38 @@ Generating Synchronization Merges
 
 Just use the option --no-commit when invoking git-merge. Then commit with
 git-commit, so that the commit hooks are invoked.
+
+
+Synchronization Commit from CVS state
+
+Populate the CVS repository (<mirror-dir>/cvs_repo) as desired, e.g.:
+
+$ cd <mirror-dir>/cvs_repo
+$ cvs update -r <tag>
+
+In the versions repository, checkout the desired branch, .e.g.:
+
+$ cd ../versions
+$ git checkout master
+
+In the root directory, invoke the cvs_cmd/copy_tree.sh script:
+
+$ cd ..
+$ ./cvs_cmd/copy_tree.sh
+
+The script writes the versions of the currently checked out files in CVS
+to the index of the versions repository. You can inspect and even edit the
+changes before generating the synchronization commit:
+
+$ cd versions
+$ git status
+$ git diff --cached
+$ git commit
+
+To abort the operation:
+
+$ cd <mirror-dir>/versions
+$ git reset --hard
 
 
 Working with a plain Git repository
@@ -48,7 +85,7 @@ Expected Results
 Data repository (<mirror-dir>/data) should contain a history isomorph to the one
 in the versions repository. File contents in the data repository should reflect
 the version numbers used as file contents in the versions repository, as mapped
-by the mock repository.
+by the CVS repository.
 
 
 Known Issues
