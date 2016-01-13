@@ -114,7 +114,7 @@ while read commit parent merge_parents; do
 
   # Apply removes.
   if [ -n "$delete" ]; then
-    $cvs_cmd/rm.sh $delete
+    $cvs_cmd/rm.sh "$message" $delete
     git rm $delete
   fi
 
