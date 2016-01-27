@@ -2,8 +2,8 @@ Initializing a Mirrored Repository
 
 $ mkdir <mirror-dir>
 $ cd <mirror-dir>
-$ ln -s <path-to-gm_draft> gm_draft
-$ ./gm_draft/gm-init.sh mock
+$ ln -s <this-dir> srcdir
+$ ./srcdir/dow-init.sh mock
 
 
 Generating Modification Commits
