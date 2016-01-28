@@ -1,0 +1,29 @@
+#!/bin/bash
+#converts a cvs tag into a single git commit
+
+#root path (change if script not executed from root)
+dow_root=`pwd`
+cvs_dir="$gm_root/cvs_repo"
+git_version_dir="$gm_root/versions"
+CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
+#extract cvs repo directory from  config file
+cvsrepobase=$(awk -F "=" '/^CVS.MODULEPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
+#clean up versions and data repos
+cd $git_version_dir
+git rm -rf *
+dirpath=/
+cd $cvs_dir
+while read line
+  do
+  echo $line
+  read ret dirpath version<<<$(echo "$dirpath $line" | awk '{ if($2 == "Repository"){gsub(",v","",$5); print 1" "$5" "$4} else print 0" "$1" "$1}');
+  #if successful,create the corresponding version file in the version repository
+  if [ $ret -eq 1 ]; then
+    rel_path=$(echo $dirpath | sed "s#$cvsrepobase##g")
+    #echo ">>$dirpath - $cvsrepobase - $rel_path - $version"
+    mkdir -p $git_version_dir/$(dirname $rel_path)
+    echo $version >| $git_version_dir/$rel_path
+    git -C "$git_version_dir" add $git_version_dir/$rel_path
+  fi
+done <<<"$(cvs status)"
+#done < "./out.txt" #use for a file input
