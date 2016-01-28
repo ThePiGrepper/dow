@@ -138,6 +138,7 @@ while read commit parent merge_parents; do
 
   cd $data_repo
 
+  touch ../modification_commit
   $utils/git_commit_to_other.sh $versions_repo
 done <<<"$(git rev-list --reverse --parents detail/$branch $base)"
 

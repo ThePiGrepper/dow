@@ -10,6 +10,10 @@ utils=../utils
 if [ -e ../synchronization_commit ]; then
   rm ../synchronization_commit
   $utils/git_commit_to_other.sh $data_repo
+elif [ -e ../modification_commit ]; then
+  rm ../modification_commit
+else
+  exit 0
 fi
 
 versions_sha=`git rev-parse HEAD`

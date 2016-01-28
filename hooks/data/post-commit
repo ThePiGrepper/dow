@@ -11,8 +11,6 @@ if ! [ -e ../modification_commit ]; then
   exit 0
 fi
 
-rm ../modification_commit
-
 if git rev-parse --quiet --verify HEAD^ > /dev/null; then
   against=HEAD^
 else
@@ -37,5 +35,6 @@ fi
 # TODO: Rollback and abort in case of CVS failure (unexpected).
 
 $utils/git_commit_to_other.sh $versions_repo
-# Commit in versions repository updates database.
+# Commit in versions repository updates database and removes
+# ../modification_commit.
 
