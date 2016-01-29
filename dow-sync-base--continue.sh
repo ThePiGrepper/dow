@@ -1,0 +1,126 @@
+#!/bin/bash
+#
+# Continue procedure of dow-sync-base
+#
+# Usage: $0 [--bad]
+#
+# Pass the argument --bad if you want to indicate that the current merge is
+# unsuccessful, regardless of the index.
+#
+# State:
+#   dow-sync-base-MERGE_HEAD : Original MERGE_HEAD if any
+#   dow-sync-base-MERGE_MODE : Original MERGE_MODE if any
+#   versions/.git/MERGE_HEAD : Current base candidate
+#   dow-sync-base-range : Range to be searched
+#   dow-sync-base-skip_base : Oldest bad commit in the range if any
+#   dow-sync-base-result : Best synchronisation bases so far
+#
+# Pseudo-code:
+#
+# If we are currently resolving a merge:
+#   If the merge has multiple merge heads:
+#     Exit with fatal error.
+#   Else if the merge is resolved with changes or the argument --bad is given:
+#     Set the merge head as the skip base.
+#   Else if the merge is unresolved:
+#     Exit with error.
+#   Else (the merge is resolved with no changes and --bad is not given):
+#     Add the merge head to the result and exclude it from the search range.
+#
+# List all commits in the remaining search range in reverse chronological order;
+# Skip all commits up to and including the skip base, if any.
+#
+# (a) Search the list for the first valid base:
+#   If no base is found, exit.
+#   Else:
+#     Output the base;
+#     Remove it and all its ancestors from the list;
+#     Repeat the search (goto a).
+
+dow_root=`pwd`
+versions_repo=$dow_root/versions
+
+cd $versions_repo
+
+if ! [ -e ../dow-sync-base-range ]; then
+  echo 'No dow-sync-base in progress?'
+  exit 1
+fi
+
+if [ -e .git/MERGE_HEAD ]; then
+  commit=`cat .git/MERGE_HEAD`
+  if [ $(wc -l < .git/MERGE_HEAD) -ne 1 ]; then
+    echo 'fatal: Multiple merge heads.'
+    exit 128
+  elif [ "$1" == '--bad' ]; then
+    echo "$commit" > ../dow-sync-base-skip_base
+  elif [ -n "$(git ls-files --unmerged)" ]; then
+    echo 'error: There are unresolved conflicts.'
+    echo "Fix conflicts and run $0 or run $0 --bad."
+    exit 128
+  elif ! git diff --quiet --cached; then
+    echo "$commit" > ../dow-sync-base-skip_base
+  else
+    echo "$commit" >> ../dow-sync-base-result
+    echo "^$commit" >> ../dow-sync-base-range
+  fi
+  git merge --abort
+fi
+
+rev_list="$(git rev-list `cat ../dow-sync-base-range`)"
+if [ -e ../dow-sync-base-skip_base ]; then
+  skip_base=`cat ../dow-sync-base-skip_base`
+fi
+
+while [ -z "$skipped" -a -n "$rev_list" ]; do
+  for commit in $rev_list; do
+    if [ -e .git/MERGE_HEAD ]; then
+      git merge --abort
+    fi
+
+    if [ -n "$skip_base" ]; then
+      # Skip.
+      if [ "$skip_base" = "$commit" ]; then
+        # Last skip.
+        skip_base=
+      fi
+      skipped=1
+      continue
+    fi
+    skipped=
+
+    # sync-merge
+    if git merge --quiet --no-commit --strategy=resolve $commit > /dev/null 2>&1; then
+      if git diff --quiet --cached; then
+        # Add base
+        echo "$commit" >> ../dow-sync-base-result
+        echo "^$commit" >> ../dow-sync-base-range
+        rev_list="$(git rev-list `cat ../dow-sync-base-range`)"
+        if [ -e ../dow-sync-base-skip_base ]; then
+          skip_base=`cat ../dow-sync-base-skip_base`
+        fi
+        break
+      else
+        # Bad candidate: continue.
+        echo "$commit" > ../dow-sync-base-skip_base
+        skip_base=$commit
+      fi
+    else
+      if ! git diff --quiet --cached --diff-filter=ADM; then
+        # Bad candidate: continue
+        echo "$commit" > ../dow-sync-base-skip_base
+        skip_base=$commit
+        git merge --abort
+      else
+        echo "dow-sync-base: Fix conflicts and run $0 or run $0 --bad."
+        exit 1
+      fi
+    fi
+  done
+done
+
+# Success
+cd ../
+cat dow-sync-base-result
+./srcdir/dow-sync-base--abort.sh
+

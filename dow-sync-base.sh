@@ -1,0 +1,57 @@
+#!/bin/bash
+#
+# Find synchronisation bases
+#
+# Usage: $0 <commit>...
+# 
+# Find best synchronisation bases relative to the current HEAD and index in the
+# range '^HEAD <commit>...'. A commit is considered a synchronisation base when,
+# if we commit the changes in the index and then merge it, the merge results in
+# no changes. A synchronisation base is better than another if the latter is an
+# ancestor of the former. A synchronisation base that does not have any better
+# synchronisation base is a best synchronisation base. Note that can be zero or
+# more than one best synchronisation bases.
+#
+# Pseudo-code:
+#
+# List all commits in the range '^HEAD <commit>...' in reverse chronological
+# order;
+#
+# (a) Search the list for the first valid base:
+#   If no base is found, exit.
+#   Else:
+#     Output the base;
+#     Remove it and all its ancestors from the list;
+#     Repeat the search (goto a).
+
+dow_root=`pwd`
+versions_repo=$dow_root/versions
+
+cd $versions_repo
+
+if [ -e ../dow-sync-base-range ]; then
+  echo 'fatal: dow-sync-base has not concluded (dow-sync-base-range exists).'
+  echo 'Please, use dow-sync-base--continue or dow-sync-base--abort.'
+  exit 128
+fi
+
+# Backup MERGE_HEAD and MERGE_MODE.
+if [ -e .git/MERGE_HEAD ]; then
+  cp .git/MERGE_HEAD ../dow-sync-base-MERGE_HEAD
+fi
+if [ -e .git/MERGE_MODE ]; then
+  cp .git/MERGE_MODE ../dow-sync-base-MERGE_MODE
+fi
+
+if ! git commit --quiet --no-verify --message='$$$ dow-sync-base aux commit $$$'; then
+  echo 'error: dow-sync-base failed to commit index.'
+  rm -f ../dow-sync-base-MERGE_{HEAD,MODE}
+  exit 1
+fi
+
+> ../dow-sync-base-result
+echo "$@ ^HEAD" > ../dow-sync-base-range
+
+cd ../
+./srcdir/dow-sync-base--continue.sh
+

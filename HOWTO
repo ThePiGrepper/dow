@@ -63,6 +63,40 @@ To abort the operation:
 $ cd <mirror-dir>/versions
 $ git reset --hard
 
+As an optional step, before applying the commit, you might want to find and
+merge synchronization bases.
+
+$ cd <mirror-dir>
+$ ./srcdir/dow-sync-base.sh
+
+If there are any conflicts on the experimental merges generated you will have to
+solve them and call
+
+$ ./srcdir/dow-sync-base--continue.sh
+
+If you want to mark a merge as unresolvable:
+
+$ ./srcdir/dow-sync-base--continue.sh --bad
+
+If you want to abort the operation:
+
+$ ./srcdir/dow-sync-base--abort.sh
+
+If you complete the operation, you might either commit the CVS state as a merge:
+
+$ cp dow-sync-base-result versions/.git/MERGE_HEAD
+$ cd versions
+$ git commit
+
+Or generate a merge and then commit the state:
+
+$ cd versions
+$ git stash
+$ git merge --no-commit `cat ../dow-sync-base-result` # if non-empty
+$ git commit # if not a fast-forward
+$ git stash pop
+$ git commit # if there are any remaining changes
+
 
 Working with a plain Git repository
 
