@@ -1,0 +1,46 @@
+#!/bin/bash
+#
+# Synchronization Merge Driver
+#
+# If file was added in both branches, take latest version.
+# If version increased in both branches, take the latest version.
+# If version decreased in both branches, take the oldest version.
+# Conflict only on delete/modify, increase/decrease or branching versions.
+
+utils=$(dirname "$BASH_SOURCE")
+
+if ! [ -s $2 ]; then
+  ab=$($utils/version_distance "`cat $1`" "`cat $3`")
+  if [ $? -ne 0 ]; then
+    echo 'failed distance'
+    git merge-file --diff3 $@
+    exit $?
+  fi
+  if [ "$ab" -gt 0 ]; then
+    cp $3 $1
+  fi
+  exit 0
+fi
+
+oa=$($utils/version_distance "`cat $2`" "`cat $1`")
+if [ $? -ne 0 ]; then
+  git merge-file --diff3 $@
+  exit $?
+fi
+ob=$($utils/version_distance "`cat $2`" "`cat $3`")
+if [ $? -ne 0 ]; then
+  git merge-file --diff3 $@
+  exit $?
+fi
+
+if (( (oa > 0 && ob < 0) || (oa < 0 && ob > 0) )); then
+  git merge-file --diff3 $@
+  exit $?
+fi
+
+if (( (ob > 0 && ob > oa) || (ob < 0 && ob < oa) )); then
+  cp $3 $1
+fi
+
+exit 0
+

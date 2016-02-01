@@ -27,3 +27,8 @@ cd ../../../../.git/hooks
 ln -s ../../.dow/srcdir/hooks/data/pre-commit .
 ln -s ../../.dow/srcdir/hooks/data/post-commit .
 
+cd ../../.dow/versions
+git config merge.sync.name 'synchronization merge'
+git config merge.sync.driver '../srcdir/utils/sync_merge_driver %A %O %B'
+git config merge.default sync
+
