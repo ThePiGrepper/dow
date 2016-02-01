@@ -53,5 +53,5 @@ fi
 echo "$@ ^HEAD" > ../dow-sync-base-range
 
 cd ../
-./srcdir/dow-sync-base--continue.sh
+./srcdir/dow-sync-base--continue
 

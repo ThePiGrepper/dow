@@ -24,17 +24,17 @@ message=`git log -1 --format=format:%B HEAD`
 
 # Apply removes.
 if [ -n "$delete" ]; then
-  $cvs_cmd/rm.sh "$message" $delete
+  $cvs_cmd/rm "$message" $delete
 fi
 
 # Apply additions and modifications.
 if [ -n "$add" ]; then
-  $cvs_cmd/ci.sh "$message" $add
+  $cvs_cmd/ci "$message" $add
 fi
 
 # TODO: Rollback and abort in case of CVS failure (unexpected).
 
-$utils/git_commit_to_other.sh $versions_repo
+$utils/git_commit_to_other $versions_repo
 # Commit in versions repository updates database and removes
 # ../modification_commit.
 

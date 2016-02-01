@@ -9,7 +9,7 @@ utils=../utils
 
 if [ -e ../synchronization_commit ]; then
   rm ../synchronization_commit
-  $utils/git_commit_to_other.sh $data_repo
+  $utils/git_commit_to_other $data_repo
 elif [ -e ../modification_commit ]; then
   rm ../modification_commit
 else
@@ -20,5 +20,5 @@ versions_sha=`git rev-parse HEAD`
 cd $data_repo
 data_sha=`git rev-parse HEAD`
 
-$utils/map_store.sh $versions_sha $data_sha
+$utils/map_store $versions_sha $data_sha
 

@@ -28,7 +28,7 @@ branch=${head:16}
 
 cd $versions_repo
 
-if ! $utils/git_checkout.sh $branch $data_repo $data_has_head $data_head_commit; then
+if ! $utils/git_checkout $branch $data_repo $data_has_head $data_head_commit; then
   exit 1
 fi
 
@@ -42,9 +42,9 @@ fi
 #       or not modified.
 
 # Begin: Locks and checks
-version_array=( `$cvs_cmd/lock.sh $delete $add $modify` )
+version_array=( `$cvs_cmd/lock $delete $add $modify` )
 if ! [ $? -eq 0 ]; then
-  $cvs_cmd/unlock.sh $delete $add $modify
+  $cvs_cmd/unlock $delete $add $modify
   exit 1
 fi
 
@@ -54,7 +54,7 @@ modify_array=( $modify )
 
 if ! [ ${#version_array[@]} -eq $(( ${#delete_array[@]} + ${#add_array[@]} + ${#modify_array[@]} )) ]; then
   echo "Oops. Array sizes mismatch: ${#version_array[@]} != ${#delete_array[@]} + ${#add_array[@]} + ${#modify_array[@]}"
-  $cvs_cmd/unlock.sh $delete $add $modify
+  $cvs_cmd/unlock $delete $add $modify
   exit 1
 fi
 
@@ -87,7 +87,7 @@ for (( ; i < m; ++i)); do # Modifies
 done
 
 if [ $mismatch -ne 0 ]; then
-  $cvs_cmd/unlock.sh $delete $add $modify
+  $cvs_cmd/unlock $delete $add $modify
   exit 1;
 fi
 # End: Locks and checks
@@ -108,7 +108,7 @@ done
 # Apply modifications.
 for file in $modify; do
   mkdir -p $(dirname $file)
-  $utils/version_advance.sh `git show :0:$file` 1 > $file
+  $utils/version_advance `git show :0:$file` 1 > $file
 done
 
 if [ -n "$add$modify" ]; then

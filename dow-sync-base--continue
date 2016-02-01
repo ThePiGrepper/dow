@@ -122,5 +122,5 @@ done
 # Success
 cd ../
 cat dow-sync-base-result
-./srcdir/dow-sync-base--abort.sh
+./srcdir/dow-sync-base--abort
 

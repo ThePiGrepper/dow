@@ -19,7 +19,7 @@ branch=${head:16}
 
 cd $data_repo
 
-if ! $utils/git_checkout.sh $branch $versions_repo $versions_has_head $versions_head_commit; then
+if ! $utils/git_checkout $branch $versions_repo $versions_has_head $versions_head_commit; then
   exit 1
 fi
 

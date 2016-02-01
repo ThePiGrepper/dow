@@ -9,13 +9,13 @@ source_head_commit=$4
 
 utils=../utils
 
-if ! $utils/check_clean_status.sh; then
+if ! $utils/check_clean_status; then
   echo "Repository $(pwd) status not clean."
   exit 1
 fi
 
 if [ $source_has_head -eq 0 ]; then
-  mapped_head_commit=`$utils/map_lookup.sh $source_head_commit`
+  mapped_head_commit=`$utils/map_lookup $source_head_commit`
   if ! [ $? -eq 0 ]; then
     exit 1
   fi
@@ -56,7 +56,7 @@ fi
 
 # Assert that status is still clean after checkout.
 # TODO: Rollback on failure.
-if ! $utils/check_clean_status.sh; then
+if ! $utils/check_clean_status; then
   echo "Repository $(pwd) status not clean."
   exit 1
 fi
@@ -65,7 +65,7 @@ fi
 if [ -e $source_repo/.git/MERGE_HEAD ]; then
   > .git/MERGE_HEAD
   while read -r p; do
-    $utils/map_lookup.sh $p >> .git/MERGE_HEAD || exit 1
+    $utils/map_lookup $p >> .git/MERGE_HEAD || exit 1
   done < $source_repo/.git/MERGE_HEAD
 else
   rm -f .git/MERGE_HEAD

@@ -14,7 +14,7 @@ cvs_cmd=../cvs_cmd
 source=$1
 branch=$2
 
-if ! $utils/check_clean_status.sh; then
+if ! $utils/check_clean_status; then
   echo "Repository $(pwd) status not clean."
   exit 1
 fi
@@ -48,7 +48,7 @@ while read commit parent merge_parents; do
 
   cd $versions_repo
 
-  if ! $utils/git_checkout_pull.sh detail/$branch $parent $merge_parents; then
+  if ! $utils/git_checkout_pull detail/$branch $parent $merge_parents; then
     exit 1
   fi
 
@@ -62,9 +62,9 @@ while read commit parent merge_parents; do
   #       or not modified.
 
   # Begin: Locks and checks
-  version_array=( `$cvs_cmd/lock.sh $delete $add $modify` )
+  version_array=( `$cvs_cmd/lock $delete $add $modify` )
   if ! [ $? -eq 0 ]; then
-    $cvs_cmd/unlock.sh $delete $add $modify
+    $cvs_cmd/unlock $delete $add $modify
     exit 1
   fi
 
@@ -74,7 +74,7 @@ while read commit parent merge_parents; do
 
   if ! [ ${#version_array[@]} -eq $(( ${#delete_array[@]} + ${#add_array[@]} + ${#modify_array[@]} )) ]; then
     echo "Oops. Array sizes mismatch: ${#version_array[@]} != ${#delete_array[@]} + ${#add_array[@]} + ${#modify_array[@]}"
-    $cvs_cmd/unlock.sh $delete $add $modify
+    $cvs_cmd/unlock $delete $add $modify
     exit 1
   fi
 
@@ -107,14 +107,14 @@ while read commit parent merge_parents; do
   done
 
   if [ $mismatch -ne 0 ]; then
-    $cvs_cmd/unlock.sh $delete $add $modify
+    $cvs_cmd/unlock $delete $add $modify
     exit 1;
   fi
   # End: Locks and checks
 
   # Apply removes.
   if [ -n "$delete" ]; then
-    $cvs_cmd/rm.sh "$message" $delete
+    $cvs_cmd/rm "$message" $delete
     git rm $delete
   fi
 
@@ -128,18 +128,18 @@ while read commit parent merge_parents; do
   # Apply modifications.
   for file in $modify; do
     mkdir -p $(dirname $file)
-    $utils/version_advance.sh `git show :0:$file` 1 > $file
+    $utils/version_advance `git show :0:$file` 1 > $file
   done
 
   if [ -n "$add$modify" ]; then
-    $cvs_cmd/ci.sh "$message" $add $modify
+    $cvs_cmd/ci "$message" $add $modify
     git add $add $modify
   fi
 
   cd $data_repo
 
   touch ../modification_commit
-  $utils/git_commit_to_other.sh $versions_repo
+  $utils/git_commit_to_other $versions_repo
 done <<<"$(git rev-list --reverse --parents detail/$branch $base)"
 
 # Checkout.

@@ -25,7 +25,7 @@ cd "$versions_repo"
 cvs_fail=0
 for file in $add; do
   version=`git show :0:$file`
-  if ! $cvs_cmd/co.sh $file $version; then
+  if ! $cvs_cmd/co $file $version; then
     cvs_fail=1
   fi
 done
