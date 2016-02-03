@@ -26,8 +26,15 @@ Commit and branch as usual.
 
 Generating Synchronization Merges
 
-Just use the option --no-commit when invoking git-merge. Then commit with
-git-commit, so that the commit hooks are invoked.
+On the versions repository:
+
+$ ../utils/git_merge_no_renames --no-commit
+$ git commit
+
+Committing separately is necessary so that the hooks are invoked.
+
+The git_merge_no_renames script avoids spurious rename detection on files with
+the same version numbers.
 
 
 Synchronization Commit from CVS state

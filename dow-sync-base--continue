@@ -39,6 +39,7 @@
 
 dow_root=`pwd`
 versions_repo=$dow_root/versions
+utils=$dow_root/utils
 
 cd $versions_repo
 
@@ -90,7 +91,7 @@ while [ -z "$skipped" -a -n "$rev_list" ]; do
     skipped=
 
     # sync-merge
-    if git merge --quiet --no-commit --strategy=resolve $commit > /dev/null 2>&1; then
+    if $utils/git_merge_no_renames --quiet --no-commit $commit > /dev/null 2>&1; then
       if git diff --quiet --cached; then
         # Add base
         echo "$commit" >> ../dow-sync-base-result
