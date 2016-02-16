@@ -1,0 +1,77 @@
+#!/bin/bash
+#
+# Test for utils/compare_git_version
+
+utils="../utils"
+
+# Usage: driver_core <version1> <version2> <expect> [<comment>]
+#
+# <version1> and <version2> are the arguments to compare_git_version.
+#
+# <expect> indicates the expected outcome.
+#
+# <comment> is an optional description for use in error messages.
+#
+# The encoding for the expected outcome is as follows
+#   0: Command succeeds with output 0
+#   +: Command succeeds with positive output
+#   -: Command succeeds with negative output
+#   E: Command fails
+driver_core () {
+  result=`$utils/compare_git_version "$1" "$2"`
+  if [ $? -ne 0 ]; then
+    result='E'
+  elif [ "$result" -eq 0 ]; then
+    result='0'
+  elif [ "$result" -gt 0 ]; then
+    result='+'
+  elif [ "$result" -lt 0 ]; then
+    result='-'
+  else
+    result='X'
+  fi
+
+  if [ "$result" != "$3" ]; then
+    echo "Failure with x=\"$1\" y=\"$2\"."
+    echo "Expected '$3' but got '$result'."
+    if [ -n "$4" ]; then
+      echo "Note: $4"
+    fi
+    echo
+    return 1
+  fi
+  return 0
+}
+
+fail=0
+while read x y expect comment; do
+  if ! driver_core "$x" "$y" "$expect" "$comment"; then
+    fail=1
+  fi
+
+  # Test duality
+
+  case "$expect" in
+    '+') expect='-' ;;
+    '-') expect='+' ;;
+  esac
+
+  if ! driver_core "$y" "$x" "$expect" "$comment (reverse)"; then
+    fail=1
+  fi
+done <<< '3.14.1        3.14          +
+          3.14.1        3.14.2        -
+          3.14.1.a4     3.14.2        -
+          3.14.1        3.14.1.0      0
+          3.14.1        3.014.01      0
+          3.14.rc1      3.14          -
+          3.14.rc1      3.14.rc0      +
+          3.14.rc1      3.15          -
+          Heisenbug     Heisenbug     0
+          x.4.z         x.004.z       0
+          x.4.z         x.005.w       -
+          x.4.z         x.003.w       +
+          x.4.z         x.4.w         E'
+
+exit $fail
+

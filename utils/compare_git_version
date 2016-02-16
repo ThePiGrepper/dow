@@ -1,0 +1,81 @@
+#!/bin/bash
+#
+# Compare Git version numbers.
+#
+# Prints a number depending on the result of comparing $1 and $2 as Git
+# versions. The printed number is
+#   negative if $1 < $2
+#   zero if $1 = $2
+#   positive if $1 > $2
+#
+# If the comparison fails, exit with error.
+#
+# Example outcomes (E means error)
+#
+# $1        $2        result
+# 3.14.1    3.14      +
+# 3.14.1    3.14.2    -
+# 3.14.1    3.14.1.0  0
+# 3.14.1    3.014.01  0
+# 3.14.rc1  3.14      E
+# 3.14.rc1  3.15      -
+
+lhs=$1
+rhs=$2
+lhs_head=${lhs%%.*}
+rhs_head=${rhs%%.*}
+while true; do
+  if [ "${lhs_head:0:2}" = rc -a "${rhs_head:0:2}" = rc ]; then
+    lhs_head=${lhs_head:2}
+    rhs_head=${rhs_head:2}
+  fi
+
+  if [ "$lhs_head" = "$rhs_head" ]; then
+    : # Proceed.
+  elif [ "$lhs_head" -eq "$rhs_head" ] 2>/dev/null; then
+    : # Proceed.
+  elif [ "$lhs_head" -lt "$rhs_head" ] 2>/dev/null; then
+    echo -1
+    exit 0
+  elif [ "$lhs_head" -gt "$rhs_head" ] 2>/dev/null; then
+    echo 1
+    exit 0
+  else
+    exit 1
+  fi
+
+  old_lhs_size=${#lhs}
+  old_rhs_size=${#rhs}
+  lhs=${lhs#*.}
+  rhs=${rhs#*.}
+  lhs_head=${lhs%%.*}
+  rhs_head=${rhs%%.*}
+  if [ ${#lhs} -eq $old_lhs_size ]; then
+    if [ ${#rhs} -eq $old_rhs_size ]; then
+      echo 0
+    elif [ -n "${rhs##*[!0.]*}" ]; then
+      echo 0
+    elif [ "$rhs_head" -ge 0 ] 2>/dev/null; then
+      echo -1
+    elif [ "${rhs_head:0:2}" = rc -a "${rhs_head:2}" -ge 0 ] 2>/dev/null; then
+      echo 1
+    else
+      exit 1
+    fi
+    exit 0
+  elif [ ${#rhs} -eq $old_rhs_size ]; then
+    if [ ${#lhs} -eq $old_lhs_size ]; then
+      echo 0
+    elif [ -n "${lhs##*[!0.]*}" ]; then
+      echo 0
+    elif [ "$lhs_head" -ge 0 ] 2>/dev/null; then
+      echo 1
+    elif [ "${lhs_head:0:2}" = rc -a "${lhs_head:2}" -ge 0 ] 2>/dev/null; then
+      echo -1
+    else
+      exit 1
+    fi
+    exit 0
+  fi
+done
+
