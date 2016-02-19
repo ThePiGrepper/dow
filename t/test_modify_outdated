@@ -22,6 +22,7 @@ git add p/x &&
 git rm -f p/x &&
 ! git commit -m remove &&
 # File was not deleted or modified
+cd "$VERSIONS_REPO" &&
 vcs_version=$("$CVS_CMD"/lock p/x) &&
 test "$vcs_version" = A1.2
 

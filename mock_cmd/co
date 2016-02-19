@@ -4,9 +4,11 @@
 
 file=$1
 version=$2
-data_repo=../data
-mock_repo=../mock_repo
-utils=../utils
+
+versions_repo=`pwd`
+dow_root=$(dirname "$versions_repo")
+data_repo=$(dirname "$dow_root")
+mock_repo=$dow_root/mock_repo
 
 if ! [ -e "$mock_repo/$file/$version" ]; then
   echo "Version $version of $file not available."

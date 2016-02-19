@@ -7,11 +7,12 @@
 #   * Lock necessary files and check if their versions match the ones in the
 #     parents.
 
-data_repo=../data
-versions_repo=../versions
-cvs_repo=../cvs_repo
-utils=../utils
-cvs_cmd=../cvs_cmd
+data_repo=`pwd`
+dow_root=$data_repo/.dow
+versions_repo=$dow_root/versions
+map=$dow_root/map
+utils=$dow_root/utils
+cvs_cmd=$dow_root/cvs_cmd
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=A --name-only`
@@ -29,7 +30,7 @@ branch=${head:16}
 
 cd $versions_repo
 
-if ! $utils/git_checkout $branch $data_repo $data_has_head $data_head_commit; then
+if ! $utils/git_checkout "$map" "$branch" "$data_repo" $data_has_head $data_head_commit; then
   exit 1
 fi
 

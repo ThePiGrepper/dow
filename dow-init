@@ -2,20 +2,28 @@
 #
 # Initialize a mirrored repository.
 
+vcs=$1
+srcdir=`readlink -f "$2"`
+
+git init
+echo .dow >> .git/info/exclude
+mkdir .dow
+
+cd .dow
 git init versions
-git init data
 mkdir map
-mkdir $1_repo
+mkdir ${vcs}_repo
+ln -s "$srcdir" srcdir
 
 ln -s srcdir/utils .
-ln -s srcdir/$1_cmd cvs_cmd
+ln -s srcdir/${vcs}_cmd cvs_cmd
 
 cd versions/.git/hooks
 ln -s ../../../srcdir/hooks/versions/pre-commit .
 ln -s ../../../srcdir/hooks/versions/commit-msg .
 ln -s ../../../srcdir/hooks/versions/post-commit .
 
-cd ../../../data/.git/hooks
-ln -s ../../../srcdir/hooks/data/pre-commit .
-ln -s ../../../srcdir/hooks/data/post-commit .
+cd ../../../../.git/hooks
+ln -s ../../.dow/srcdir/hooks/data/pre-commit .
+ln -s ../../.dow/srcdir/hooks/data/post-commit .
 

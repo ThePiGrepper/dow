@@ -2,9 +2,11 @@
 #
 # Checkout branch and setup parents in data repository. Assert coherency.
 
-data_repo=../data
-versions_repo=../versions
-utils=../utils
+versions_repo=`pwd`
+dow_root=$(dirname "$versions_repo")
+data_repo=$(dirname "$dow_root")
+map=$dow_root/map
+utils=$dow_root/utils
 
 versions_head_commit=`git rev-parse --quiet --verify HEAD`
 versions_has_head=$? # 0 means yes.
@@ -19,7 +21,7 @@ branch=${head:16}
 
 cd $data_repo
 
-if ! $utils/git_checkout $branch $versions_repo $versions_has_head $versions_head_commit; then
+if ! $utils/git_checkout "$map" "$branch" "$versions_repo" $versions_has_head $versions_head_commit; then
   exit 1
 fi
 

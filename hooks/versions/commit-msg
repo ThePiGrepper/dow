@@ -4,9 +4,10 @@
 
 msg_file=$1
 
-data_repo=../data
-versions_repo=../versions
-cvs_cmd=../cvs_cmd
+versions_repo=`pwd`
+dow_root=$(dirname "$versions_repo")
+data_repo=$(dirname "$dow_root")
+cvs_cmd=$dow_root/cvs_cmd
 
 delete=`git diff --cached --diff-filter=D --name-only`
 add=`git diff --cached --diff-filter=AM --name-only`
@@ -17,8 +18,6 @@ if [[ "$stripped" =~ ^[[:space:]]*$ ]]; then
   echo 'Aborting commit due to empty commit message.'
   exit 1
 fi
-
-cd $data_repo
 
 # Apply additions and modifications.
 cd "$versions_repo"
@@ -46,5 +45,5 @@ if [ -n "$delete" ]; then
 fi
 
 # Commit in post-commit hook.
-touch ../synchronization_commit
+touch "$dow_root"/synchronization_commit
 

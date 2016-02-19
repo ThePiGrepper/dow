@@ -8,8 +8,8 @@
 message=$1
 shift
 
+cd .dow/mock_repo
 utils=../utils
-cd ../mock_repo
 
 for file in "$@"; do
   if [ -e $file/log ]; then

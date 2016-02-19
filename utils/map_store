@@ -1,10 +1,12 @@
 #!/bin/bash
 #
 # Store commit sha1 pair in the map.
+#
+# Usage: $0 <map> <first-sha1> <second-sha1>
 
-cd ../map
+cd "$1"
 
-mkdir -p ${1:0:2} ${2:0:2}
-echo $1 > ${2:0:2}/${2:2}
-echo $2 > ${1:0:2}/${1:2}
+mkdir -p ${2:0:2} ${3:0:2}
+echo $2 > ${3:0:2}/${3:2}
+echo $3 > ${2:0:2}/${2:2}
 

@@ -2,12 +2,12 @@
 #
 # Update CVS-like repository and apply commit to versions repository.
 
-versions_repo=../versions
-utils=../utils
-cvs_cmd=../cvs_cmd
+versions_repo=.dow/versions
+utils=.dow/utils
+cvs_cmd=.dow/cvs_cmd
 
 # Skip if not a modification commit.
-if ! [ -e ../modification_commit ]; then
+if ! [ -e .dow/modification_commit ]; then
   exit 0
 fi
 
@@ -36,5 +36,5 @@ fi
 
 $utils/git_commit_to_other $versions_repo
 # Commit in versions repository updates database and removes
-# ../modification_commit.
+# .dow/modification_commit.
 

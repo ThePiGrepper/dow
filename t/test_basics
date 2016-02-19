@@ -36,11 +36,11 @@ git rm p/x &&
 test_tick &&
 git commit -m remove &&
 # File was deleted
+cd "$VERSIONS_REPO" &&
 vcs_version=$("$CVS_CMD"/lock p/x) &&
 test "$vcs_version" = D1.3 &&
 
 # Synchronization commits
-cd "$VERSIONS_REPO" &&
 mkdir -p p &&
 echo 1.1 > p/x &&
 git add p/x &&
@@ -79,8 +79,8 @@ for i in $(seq 0 5); do
   test $? -eq 0 &&
   data_sha=$(git -C "$DATA_REPO" rev-parse HEAD~$i) &&
   versions_sha=$(git -C "$VERSIONS_REPO" rev-parse HEAD~$i) &&
-  data_lookup=$("$UTILS"/map_lookup $versions_sha) &&
-  versions_lookup=$("$UTILS"/map_lookup $data_sha) &&
+  data_lookup=$("$UTILS"/map_lookup "$MAP" $versions_sha) &&
+  versions_lookup=$("$UTILS"/map_lookup "$MAP" $data_sha) &&
   test "$data_sha" = "$data_lookup" &&
   test "$versions_sha" = "$versions_lookup"
 done

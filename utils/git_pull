@@ -5,11 +5,12 @@
 # Pull from source while updating versions repository. Only fast-forwards
 # allowed.
 
-data_repo=../data
-versions_repo=../versions
-cvs_repo=../cvs_repo
-utils=../utils
-cvs_cmd=../cvs_cmd
+data_repo=`pwd`
+dow_root=$data_repo/.dow
+versions_repo=$dow_root/versions
+map=$dow_root/map
+utils=$dow_root/utils
+cvs_cmd=$dow_root/cvs_cmd
 
 source=$1
 branch=$2
@@ -48,7 +49,7 @@ while read commit parent merge_parents; do
 
   cd $versions_repo
 
-  if ! $utils/git_checkout_pull detail/$branch $parent $merge_parents; then
+  if ! $utils/git_checkout_pull "$map" detail/"$branch" $parent $merge_parents; then
     exit 1
   fi
 
@@ -114,7 +115,9 @@ while read commit parent merge_parents; do
 
   # Apply removes.
   if [ -n "$delete" ]; then
+    cd "$data_repo"
     $cvs_cmd/rm "$message" $delete
+    cd "$versions_repo"
     git rm $delete
   fi
 
@@ -132,13 +135,15 @@ while read commit parent merge_parents; do
   done
 
   if [ -n "$add$modify" ]; then
+    cd "$data_repo"
     $cvs_cmd/ci "$message" $add $modify
+    cd "$versions_repo"
     git add $add $modify
   fi
 
   cd $data_repo
 
-  touch ../modification_commit
+  touch "$dow_root"/modification_commit
   $utils/git_commit_to_other $versions_repo
 done <<<"$(git rev-list --reverse --parents detail/$branch $base)"
 

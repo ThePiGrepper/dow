@@ -54,22 +54,23 @@ if test $? -ne 0; then
 fi
 
 cd "$WORK"
-DOW_ROOT=$(pwd)
+DATA_REPO=$(pwd)
 SRCDIR=$(dirname "$TEST_DIR")
-ln -s "$SRCDIR" srcdir
 
-if ! srcdir/dow-init "$vcs"; then
+if ! "$SRCDIR"/dow-init "$vcs" "$SRCDIR"; then
   echo "fatal: Failed to initialize mirrored repository of kind '$vcs'."
   false
   cleanup_test
 fi
 
-DATA_REPO=$DOW_ROOT/data
+DOW_ROOT=$DATA_REPO/.dow
 VERSIONS_REPO=$DOW_ROOT/versions
 MAP=$DOW_ROOT/map
 CVS_REPO=$DOW_ROOT/${vcs}_repo
 UTILS=$DOW_ROOT/utils
 CVS_CMD=$DOW_ROOT/cvs_cmd
+
+cd "$DOW_ROOT"
 
 if test "$vcs" = cvs; then
   mkdir cvsroot

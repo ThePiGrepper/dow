@@ -4,8 +4,11 @@
 
 # Index and parents setup in pre-commit hook.
 
-data_repo=../data
-utils=../utils
+versions_repo=`pwd`
+dow_root=$(dirname "$versions_repo")
+data_repo=$(dirname "$dow_root")
+map=$dow_root/map
+utils=$dow_root/utils
 
 if [ -e ../synchronization_commit ]; then
   rm ../synchronization_commit
@@ -20,5 +23,5 @@ versions_sha=`git rev-parse HEAD`
 cd $data_repo
 data_sha=`git rev-parse HEAD`
 
-$utils/map_store $versions_sha $data_sha
+$utils/map_store "$map" $versions_sha $data_sha
 

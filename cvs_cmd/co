@@ -5,8 +5,9 @@
 file=$1
 version=$2
 
-dow_root=$(dirname "$(pwd)")
-data_repo="$dow_root/data"
+versions_repo=`pwd`
+dow_root=$(dirname "$versions_repo")
+data_repo=$(dirname "$dow_root")
 cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 

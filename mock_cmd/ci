@@ -11,9 +11,10 @@
 message=$1
 shift
 
-data_repo=../data
-mock_repo=../mock_repo
-utils=../utils
+data_repo=`pwd`
+dow_root=$data_repo/.dow
+mock_repo=$dow_root/mock_repo
+utils=$dow_root/utils
 
 cd $data_repo
 

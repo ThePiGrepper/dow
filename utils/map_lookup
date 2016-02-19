@@ -1,12 +1,14 @@
 #!/bin/bash
 #
 # Lookup commit corresponding to the one given in the map.
+#
+# Usage: $0 <map> <sha1>
 
-cat ../map/${1:0:2}/${1:2}
+cat "$1"/${2:0:2}/${2:2}
 ret=$?
 
 if ! [ $ret -eq 0 ]; then
-  echo 'Could not retrieve commit mirroring $1.'
+  echo 'Could not retrieve commit mirroring $2 in $1.'
 fi
 
 exit $ret

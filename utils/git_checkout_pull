@@ -4,10 +4,11 @@
 #
 # Usage: $0 <branch> <source_parents>...
 
-branch=$1
-source_head_commit=$2
-source_has_head=$(($# > 1))
-is_merge=$(($# > 2))
+map=$1
+branch=$2
+source_head_commit=$3
+source_has_head=$(($# > 2))
+is_merge=$(($# > 3))
 shift
 shift
 
@@ -15,7 +16,7 @@ shift
 #source_has_head=$3
 #source_head_commit=$4
 
-utils=../utils
+utils=$(dirname "$BASH_SOURCE")
 
 if ! $utils/check_clean_status; then
   echo "Repository $(pwd) status not clean."
@@ -23,7 +24,7 @@ if ! $utils/check_clean_status; then
 fi
 
 if [ $source_has_head -ne 0 ]; then
-  mapped_head_commit=`$utils/map_lookup $source_head_commit`
+  mapped_head_commit=`$utils/map_lookup "$map" $source_head_commit`
   if ! [ $? -eq 0 ]; then
     exit 1
   fi
@@ -75,7 +76,7 @@ fi
 if [ $is_merge -ne 0 ]; then
   > .git/MERGE_HEAD
   while (($#)); do
-    $utils/map_lookup $1 >> .git/MERGE_HEAD || exit 1
+    $utils/map_lookup "$map" $1 >> .git/MERGE_HEAD || exit 1
     shift
   done
   echo -n no-ff > .git/MERGE_MODE
