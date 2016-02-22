@@ -68,11 +68,11 @@ if [ -e .git/MERGE_HEAD ]; then
 fi
 
 rev_list="$(git rev-list `cat ../dow-sync-base-range`)"
-if [ -e ../dow-sync-base-skip_base ]; then
-  skip_base=`cat ../dow-sync-base-skip_base`
-fi
 
 while [ -z "$skipped" -a -n "$rev_list" ]; do
+  if [ -e ../dow-sync-base-skip_base ]; then
+    skip_base=`cat ../dow-sync-base-skip_base`
+  fi
   for commit in $rev_list; do
     if [ -e .git/MERGE_HEAD ]; then
       git merge --abort
@@ -96,20 +96,15 @@ while [ -z "$skipped" -a -n "$rev_list" ]; do
         echo "$commit" >> ../dow-sync-base-result
         echo "^$commit" >> ../dow-sync-base-range
         rev_list="$(git rev-list `cat ../dow-sync-base-range`)"
-        if [ -e ../dow-sync-base-skip_base ]; then
-          skip_base=`cat ../dow-sync-base-skip_base`
-        fi
         break
       else
         # Bad candidate: continue.
         echo "$commit" > ../dow-sync-base-skip_base
-        skip_base=$commit
       fi
     else
       if ! git diff --quiet --cached --diff-filter=ADM; then
         # Bad candidate: continue
         echo "$commit" > ../dow-sync-base-skip_base
-        skip_base=$commit
         git merge --abort
       else
         echo "dow-sync-base: Fix conflicts and run $0 or run $0 --bad."
