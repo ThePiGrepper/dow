@@ -67,7 +67,9 @@ As an optional step, before applying the commit, you might want to find and
 merge synchronization bases.
 
 $ cd <mirror-dir>
-$ ./srcdir/dow-sync-base
+$ srcdir/dow-sync-base <branch>...
+
+where <branch>... are branches from which we would like to merge.
 
 If there are any conflicts on the experimental merges generated you will have to
 solve them and call
