@@ -3,7 +3,7 @@ Initializing a Mirrored Repository
 $ mkdir <mirror-dir>
 $ cd <mirror-dir>
 $ ln -s <this-dir> srcdir
-$ ./srcdir/dow-init cvs
+$ srcdir/dow-init cvs
 $ echo "CVS.ROOTPATH=<cvs-root-path>" > config
 $ echo "CVS.MODULEPATH=<cvs-root-path>/<module>" >> config
 $ cd cvs_repo
@@ -47,7 +47,7 @@ $ git checkout master
 In the root directory, invoke the cvs_cmd/copy_tree script:
 
 $ cd ..
-$ ./cvs_cmd/copy_tree
+$ cvs_cmd/copy_tree
 
 The script writes the versions of the currently checked out files in CVS
 to the index of the versions repository. You can inspect and even edit the
@@ -74,15 +74,15 @@ where <branch>... are branches from which we would like to merge.
 If there are any conflicts on the experimental merges generated you will have to
 solve them and call
 
-$ ./srcdir/dow-sync-base--continue
+$ srcdir/dow-sync-base--continue
 
 If you want to mark a merge as unresolvable:
 
-$ ./srcdir/dow-sync-base--continue --bad
+$ srcdir/dow-sync-base--continue --bad
 
 If you want to abort the operation:
 
-$ ./srcdir/dow-sync-base--abort
+$ srcdir/dow-sync-base--abort
 
 If you complete the operation, you might either commit the CVS state as a merge:
 
