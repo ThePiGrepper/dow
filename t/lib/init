@@ -1,0 +1,89 @@
+#!/bin/bash
+
+if test $# -lt 1; then
+  echo "Usage: $0 <vcs>"
+  exit 1
+fi
+
+vcs=$1
+
+if test "$2" = "-d"; then
+  debug=1
+fi
+
+test_tick () {
+  if test -z "${test_tick+set}"
+  then
+    test_tick=1437136273
+  else
+    test_tick=$(($test_tick + 60))
+  fi
+  GIT_COMMITTER_DATE="$test_tick -0500"
+  GIT_AUTHOR_DATE="$test_tick -0500"
+  export GIT_COMMITTER_DATE GIT_AUTHOR_DATE
+}
+
+cleanup_test () {
+  ec=$?
+  cd "$TEST_DIR"
+  if test -z "$debug"; then
+    rm -rf "$WORK"
+  fi
+  if test $ec -eq 0; then
+    echo PASS
+  else
+    echo FAIL
+  fi
+  exit $ec
+}
+
+TEST_DIR=$(pwd)
+
+GIT_AUTHOR_EMAIL=author@example.com
+GIT_AUTHOR_NAME='A U Thor'
+GIT_COMMITTER_EMAIL=committer@example.com
+GIT_COMMITTER_NAME='C O Mitter'
+export GIT_AUTHOR_EMAIL GIT_AUTHOR_NAME
+export GIT_COMMITTER_EMAIL GIT_COMMITTER_NAME
+
+WORK=$(mktemp -d "trash-$(basename "$0")-XXXXXXXXXX")
+
+if test $? -ne 0; then
+  echo "fatal: Failed to create temporary working directory."
+  exit 1
+fi
+
+cd "$WORK"
+DOW_ROOT=$(pwd)
+SRCDIR=$(dirname "$TEST_DIR")
+ln -s "$SRCDIR" srcdir
+
+if ! srcdir/dow-init "$vcs"; then
+  echo "fatal: Failed to initialize mirrored repository of kind '$vcs'."
+  false
+  cleanup_test
+fi
+
+DATA_REPO=$DOW_ROOT/data
+VERSIONS_REPO=$DOW_ROOT/versions
+MAP=$DOW_ROOT/map
+CVS_REPO=$DOW_ROOT/${vcs}_repo
+UTILS=$DOW_ROOT/utils
+CVS_CMD=$DOW_ROOT/cvs_cmd
+
+if test "$vcs" = cvs; then
+  mkdir cvsroot
+  THE_CVSROOT=$DOW_ROOT/cvsroot
+  mkdir cvsroot/CVSROOT cvsroot/p
+  echo "CVS.ROOTPATH=$THE_CVSROOT" > config
+  echo "CVS.MODULEPATH=$THE_CVSROOT/p" >> config
+  cvs -d "$THE_CVSROOT" init &&
+  cd cvs_repo &&
+  cvs -d "$THE_CVSROOT" checkout p
+fi
+
+if test $? -ne 0; then
+  false
+  cleanup_test
+fi
+
