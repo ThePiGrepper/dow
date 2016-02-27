@@ -22,6 +22,7 @@ head=`cat .git/HEAD`
 
 if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
   echo 'Detached HEAD. Aborting.'
+  exit 1
 fi
 
 branch=${head:16}
