@@ -1,0 +1,90 @@
+#!/bin/bash
+#
+# Test basic operations
+#
+# Test modification and synchronization commits involving a file nested inside
+# a multiple directories.
+#
+# * 4e2b762 sync remove
+# | D     p/a/b/x
+# * 4444606 sync modify
+# | M     p/a/b/x
+# * 2b90565 sync add
+# | A     p/a/b/x
+# * 6768190 remove
+# | D     p/a/b/x
+# * 5b3a0d7 modify
+# | M     p/a/b/x
+# * 970d903 add
+#   A     p/a/b/x
+
+
+
+. lib/init
+
+# Modification commits
+cd "$DATA_REPO" &&
+mkdir -p p/a/b &&
+echo x > p/a/b/x &&
+git add p/a/b/x &&
+test_tick &&
+git commit -m add &&
+echo xx > p/a/b/x &&
+git add p/a/b/x &&
+test_tick &&
+git commit -m modify &&
+git rm p/a/b/x &&
+test_tick &&
+git commit -m remove &&
+# File was deleted
+vcs_version=$("$CVS_CMD"/lock p/a/b/x) &&
+test "$vcs_version" = D1.3 &&
+
+# Synchronization commits
+cd "$VERSIONS_REPO" &&
+mkdir -p p/a/b &&
+echo 1.1 > p/a/b/x &&
+git add p/a/b/x &&
+test_tick &&
+git commit -m 'sync add' &&
+# File not changed in CVS
+vcs_version=$("$CVS_CMD"/lock p/a/b/x) &&
+test "$vcs_version" = D1.3 &&
+echo 1.2 > p/a/b/x &&
+git add p/a/b/x &&
+test_tick &&
+git commit -m 'sync modify' &&
+git rm p/a/b/x &&
+test_tick &&
+git commit -m 'sync remove' &&
+# Verify results with SHA.
+data_sha=$(git -C "$DATA_REPO" rev-parse HEAD) &&
+versions_sha=$(git rev-parse HEAD) &&
+test "$data_sha" = 4e2b7622ade95a70fb9ce61664ac5be5a4f488d4 &&
+test "$versions_sha" = 6997e952c2bc6d0ea57c740ef449e6beacc94015 &&
+# File not changed in CVS
+vcs_version=$("$CVS_CMD"/lock p/a/b/x) &&
+test "$vcs_version" = D1.3 &&
+
+# Compare contents of modification and synchronization commits.
+git diff --quiet HEAD HEAD~3 &&
+git diff --quiet HEAD~1 HEAD~4 &&
+git diff --quiet HEAD~2 HEAD~5 &&
+cd "$DATA_REPO" &&
+git diff --quiet HEAD HEAD~3 &&
+git diff --quiet HEAD~1 HEAD~4 &&
+git diff --quiet HEAD~2 HEAD~5 &&
+
+# Commit mapping
+for i in $(seq 0 5); do
+  test $? -eq 0 &&
+  data_sha=$(git -C "$DATA_REPO" rev-parse HEAD~$i) &&
+  versions_sha=$(git -C "$VERSIONS_REPO" rev-parse HEAD~$i) &&
+  data_lookup=$("$UTILS"/map_lookup $versions_sha) &&
+  versions_lookup=$("$UTILS"/map_lookup $data_sha) &&
+  test "$data_sha" = "$data_lookup" &&
+  test "$versions_sha" = "$versions_lookup"
+done
+
+cleanup_test
+
