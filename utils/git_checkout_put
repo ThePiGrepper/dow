@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Checkout and setup merge heads according to source (pull version)
+# Checkout and setup merge heads according to source (dow-put version)
 #
 # Usage: $0 <branch> <source_parents>...
 

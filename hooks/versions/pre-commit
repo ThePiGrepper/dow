@@ -17,7 +17,7 @@ if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
   exit 1
 fi
 
-branch=${head:16}
+branch=sync/${head:16}
 
 cd $data_repo
 

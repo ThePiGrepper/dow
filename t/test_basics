@@ -35,6 +35,7 @@ git commit -m modify &&
 git rm p/x &&
 test_tick &&
 git commit -m remove &&
+"$SRCDIR"/dow-put &&
 # File was deleted
 cd "$VERSIONS_REPO" &&
 vcs_version=$("$CVS_CMD"/lock p/x) &&
@@ -60,7 +61,7 @@ git commit -m 'sync remove' &&
 data_sha=$(git -C "$DATA_REPO" rev-parse HEAD) &&
 versions_sha=$(git rev-parse HEAD) &&
 test "$data_sha" = e2498285511b260bab07c4abbfaa8b2aeec2e8fb &&
-test "$versions_sha" = 58a4d72b9d48b88cbaa490d894461665ff8380c4 &&
+test "$versions_sha" = 6d6a0a078917ffa8aee7513559307835fb529f92 &&
 # File not changed in CVS
 vcs_version=$("$CVS_CMD"/lock p/x) &&
 test "$vcs_version" = D1.3 &&

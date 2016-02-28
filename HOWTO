@@ -13,6 +13,20 @@ Generating Modification Commits
 
 Go to the repository (<mirror-dir>).
 Commit and branch as usual (merges not supported).
+When you want to put your work on CVS, checkout the desired branch and call
+dow-put, e.g.:
+
+$ cd <mirror-dir>
+$ git checkout devel
+$ .dow/srcdir/dow-put
+
+After the first call to dow-put, a synchronization branch prefixed with "sync/"
+is created ("sync/devel" in the example above), which tracks the synchronization
+status of the branch.
+
+Remark: Alternatively, if you checkout, e.g., "sync/devel" and commit there,
+your commit will automatically update CVS and the versions repository. But this
+feature is deprecated.
 
 
 Generating Synchronization Commits
@@ -111,14 +125,13 @@ Clone and pull from the data repository as usual.
 
 $ git clone <mirror-dir> <local-repo>
 
-When you want to publish your work, call a pull script from the data repository:
+When you want to publish your work, push to the data repository and then call
+dow-put from there.
 
+$ git push devel
 $ cd <mirror-dir>
-$ .dow/utils/git_pull <local-repo> <branch>
-
-The script will fetch your branch and simulate modification commits from your
-changes. If a commit fails to apply (e.g., because it modifies an outdated
-file), the branch is not updated.
+$ git checkout devel
+$ .dow/srcdir/dow-put
 
 
 Expected Results

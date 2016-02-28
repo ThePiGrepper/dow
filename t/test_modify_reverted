@@ -20,18 +20,34 @@ git commit -m old &&
 echo new > p/x &&
 git add p/x &&
 git commit -m new &&
+"$SRCDIR"/dow-put &&
 cd "$VERSIONS_REPO" &&
 echo 1.1 > p/x &&
 git add p/x &&
 git commit -m 'revert to 1.1' &&
 cd "$DATA_REPO" &&
+git checkout master &&
+git merge --ff-only sync/master &&
+parent_data=$(git rev-parse master) &&
+parent_versions=$(git -C "$VERSIONS_REPO" rev-parse master) &&
 # Attempt modification
 echo override > p/x &&
 git add p/x &&
-! git commit -m override &&
+git commit -m override &&
+! "$SRCDIR"/dow-put &&
+synced_data=$(git rev-parse sync/master) &&
+synced_versions=$(git -C "$VERSIONS_REPO" rev-parse master) &&
+test "$parent_data" = "$synced_data" &&
+test "$parent_versions" = "$synced_versions" &&
+git checkout -B master sync/master &&
 # Attempt remove
 git rm -f p/x &&
-! git commit -m remove &&
+git commit -m remove &&
+! "$SRCDIR"/dow-put &&
+synced_data=$(git rev-parse sync/master) &&
+synced_versions=$(git -C "$VERSIONS_REPO" rev-parse master) &&
+test "$parent_data" = "$synced_data" &&
+test "$parent_versions" = "$synced_versions" &&
 # File was not deleted or modified
 cd "$VERSIONS_REPO" &&
 vcs_version=$("$CVS_CMD"/lock p/x) &&

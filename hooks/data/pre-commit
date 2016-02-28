@@ -21,12 +21,12 @@ data_head_commit=`git rev-parse --quiet --verify HEAD`
 data_has_head=$? # 0 means yes.
 head=`cat .git/HEAD`
 
-if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
-  echo 'Detached HEAD. Aborting.'
-  exit 1
+if [ "${head:0:21}" != 'ref: refs/heads/sync/' ]; then
+  # Not a synchronized branch. Commit as usual.
+  exit 0
 fi
 
-branch=${head:16}
+branch=${head:21}
 
 cd $versions_repo
 

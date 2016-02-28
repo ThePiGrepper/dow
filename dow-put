@@ -2,8 +2,7 @@
 #
 # To be called from data repository.
 #
-# Pull from source while updating versions repository. Only fast-forwards
-# allowed.
+# Synchronize current branch with CVS.
 
 data_repo=`pwd`
 dow_root=$data_repo/.dow
@@ -12,22 +11,37 @@ map=$dow_root/map
 utils=$dow_root/utils
 cvs_cmd=$dow_root/cvs_cmd
 
-source=$1
-branch=$2
-
 if ! $utils/check_clean_status; then
   echo "Repository $(pwd) status not clean."
   exit 1
 fi
 
-git fetch --force $source $branch:detail/$branch
+head=`cat .git/HEAD`
 
-if git rev-parse --quiet --verify $branch > /dev/null; then
-  if ! git merge-base --is-ancestor $branch detail/$branch; then
+if [ "${head:0:21}" = 'ref: refs/heads/sync/' ]; then
+  echo "fatal: Attempting to synchronize a synchronization branch."
+  exit 1
+fi
+
+if [ "${head:0:16}" != 'ref: refs/heads/' ]; then
+  echo 'fatal: Detached HEAD.'
+  exit 1
+fi
+
+branch=${head:16}
+
+if base=^$(git rev-parse --quiet --verify sync/"$branch"); then
+  if ! git merge-base --is-ancestor sync/"$branch" "$branch"; then
     echo "Error: Non fast-forward."
     exit 1
   fi
-  base="^$branch"
+elif mapped_base=$(git -C "$versions_repo" rev-parse --quiet --verify "$branch"); then
+  base=$("$utils"/map_lookup "$map" $mapped_base) &&
+  git branch sync/"$branch" $base
+  if [ $? -ne 0 ]; then
+    exit 1
+  fi
+  base=^$base
 else
   base= #empty
 fi
@@ -54,7 +68,7 @@ while read commit parent merge_parents; do
 
   cd $versions_repo
 
-  if ! $utils/git_checkout_pull "$map" detail/"$branch" $parent $merge_parents; then
+  if ! $utils/git_checkout_put "$map" detail/"$branch" $parent $merge_parents; then
     exit 1
   fi
 
@@ -150,18 +164,17 @@ while read commit parent merge_parents; do
 
   touch "$dow_root"/modification_commit
   $utils/git_commit_to_other $versions_repo
-done <<<"$(git rev-list --reverse --parents detail/$branch $base)"
+done <<<"$(git rev-list --reverse --parents "$branch" $base)"
 
 # Checkout.
-if git rev-parse --quiet --verify $branch > /dev/null; then
-  git checkout $branch
+if git rev-parse --quiet --verify sync/"$branch" > /dev/null; then
+  git checkout sync/"$branch"
 else
-  git checkout --orphan $branch
+  git checkout --orphan sync/"$branch"
   git rm -rf . 2> /dev/null
 fi
 
-git merge detail/$branch
-git branch -d detail/$branch
+git merge "$branch"
 
 cd $versions_repo
 
