@@ -33,6 +33,11 @@ else
 fi
 
 while read commit parent merge_parents; do
+  if [ -z "$commit" ]; then
+    echo "Already up-to-date."
+    exit 0
+  fi
+
   if [ -n "$parent" ]; then
     against=$parent
   else
