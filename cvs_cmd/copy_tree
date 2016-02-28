@@ -5,7 +5,7 @@
 dow_root=`pwd`
 cvs_dir="$dow_root/cvs_repo"
 git_version_dir="$dow_root/versions"
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
+export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 #clean up versions and data repos
 cd $git_version_dir
 git rm -rf *

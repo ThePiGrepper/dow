@@ -10,7 +10,7 @@
 
 dow_root=$(dirname "$(pwd)")
 cvs_repo="$dow_root/cvs_repo"
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
+export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
 cd $cvs_repo
 
