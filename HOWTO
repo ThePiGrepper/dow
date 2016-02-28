@@ -5,7 +5,6 @@ $ cd <mirror-dir>
 $ ln -s <this-dir> srcdir
 $ srcdir/dow-init cvs
 $ echo "CVS.ROOTPATH=<cvs-root-path>" > config
-$ echo "CVS.MODULEPATH=<cvs-root-path>/<module>" >> config
 $ cd cvs_repo
 $ export CVSROOT=<cvs-root-path>
 $ cvs checkout <module> # as desired
