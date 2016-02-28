@@ -3,11 +3,9 @@
 
 #root path (change if script not executed from root)
 dow_root=`pwd`
-cvs_dir="$gm_root/cvs_repo"
-git_version_dir="$gm_root/versions"
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
-#extract cvs repo directory from  config file
-cvsrepobase=$(awk -F "=" '/^CVS.MODULEPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
+cvs_dir="$dow_root/cvs_repo"
+git_version_dir="$dow_root/versions"
+CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 #clean up versions and data repos
 cd $git_version_dir
 git rm -rf *
@@ -19,8 +17,8 @@ while read line
   read ret dirpath version<<<$(echo "$dirpath $line" | awk '{ if($2 == "Repository"){gsub(",v","",$5); print 1" "$5" "$4} else print 0" "$1" "$1}');
   #if successful,create the corresponding version file in the version repository
   if [ $ret -eq 1 ]; then
-    rel_path=$(echo $dirpath | sed "s#$cvsrepobase##g")
-    #echo ">>$dirpath - $cvsrepobase - $rel_path - $version"
+    rel_path=$(echo $dirpath | sed "s#$CVSROOT##g")
+    #echo ">>$CVSROOT - $ - $rel_path - $version"
     mkdir -p $git_version_dir/$(dirname $rel_path)
     echo $version >| $git_version_dir/$rel_path
     git -C "$git_version_dir" add $git_version_dir/$rel_path

@@ -8,8 +8,9 @@
 
 #TODO: Handle retired files
 
-cvs_repo=../cvs_repo
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
+dow_root=$(dirname "$(pwd)")
+cvs_repo="$dow_root/cvs_repo"
+CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
 cd $cvs_repo
 

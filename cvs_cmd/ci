@@ -11,9 +11,10 @@
 message=$1
 shift
 
-data_repo=../data
-cvs_repo=../cvs_repo
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
+dow_root=$(dirname "$(pwd)")
+data_repo="$dow_root/data"
+cvs_repo="$dow_root/cvs_repo"
+CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
 cd $data_repo
 

@@ -1,8 +1,10 @@
 #!/bin/bash
 #
 # Delete files in the CVS repository. Unlock if successful.
-CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' ./config)
-cd ../cvs_repo
+dow_root=$(dirname "$(pwd)")
+cvs_repo="$dow_root/cvs_repo"
+CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
+cd "$cvs_repo"
 message=$1
 shift
 
