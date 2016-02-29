@@ -12,6 +12,12 @@ export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}'
 
 cd $cvs_repo
 
+#enter module before update(fix strange cvs-update behaviour)
+module=${file%%/*}
+trail=${file#*/}
+cd $module
+cvs update -d ${trail%%/*}
+cd -
 cvs update -r $version $file
 #> /dev/null/ 2>&1
 if [ ! -f $file ]; then
