@@ -24,10 +24,6 @@ After the first call to dow-put, a synchronization branch prefixed with "sync/"
 is created ("sync/devel" in the example above), which tracks the synchronization
 status of the branch.
 
-Remark: Alternatively, if you checkout, e.g., "sync/devel" and commit there,
-your commit will automatically update CVS and the versions repository. But this
-feature is deprecated.
-
 
 Generating Synchronization Commits
 
@@ -145,7 +141,7 @@ by the CVS repository.
 Converting repository with legacy layout
 
 $ cd <mirror-dir>
-$ srcdir/dow-convert 0 1
+$ srcdir/dow-convert 0 2
 
 
 Known Issues

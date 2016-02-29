@@ -6,7 +6,7 @@
 #
 # Convert from layout number <from> to <to>.
 
-latest=1
+latest=2
 
 shopt -s extglob dotglob
 
@@ -36,6 +36,16 @@ convert_0 () {
   ln -fs ../../.dow/srcdir/hooks/data/pre-commit .
   ln -fs ../../.dow/srcdir/hooks/data/post-commit .
   cd ../..
+}
+
+convert_1 () {
+  if ! [ -L .git/hooks/post-commit ]; then
+    echo "error: Not a repository version 1."
+    pwd
+    exit 1
+  fi
+
+  rm .git/hooks/post-commit
 }
 
 if [ $# -ne 2 ]; then

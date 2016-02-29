@@ -25,7 +25,6 @@ ln -s ../../../srcdir/hooks/versions/post-commit .
 
 cd ../../../../.git/hooks
 ln -s ../../.dow/srcdir/hooks/data/pre-commit .
-ln -s ../../.dow/srcdir/hooks/data/post-commit .
 
 cd ../../.dow/versions
 git config merge.sync.name 'synchronization merge'

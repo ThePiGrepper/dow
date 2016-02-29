@@ -12,8 +12,7 @@ test -e "$DATA_REPO" -a -e "$VERSIONS_REPO" -a -e "$MAP" &&
 test -e "$CVS_REPO" -a -e "$UTILS" -a -e "$CVS_CMD" &&
 is_git_repo "$DATA_REPO" &&
 is_git_repo "$VERSIONS_REPO" &&
-test -e "$DATA_REPO"/.git/hooks/pre-commit -a \
-     -e "$DATA_REPO"/.git/hooks/post-commit &&
+test -e "$DATA_REPO"/.git/hooks/pre-commit
 test -e "$VERSIONS_REPO"/.git/hooks/pre-commit -a \
      -e "$VERSIONS_REPO"/.git/hooks/commit-msg -a \
      -e "$VERSIONS_REPO"/.git/hooks/post-commit
