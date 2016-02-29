@@ -7,6 +7,18 @@
 #
 # File contents are copied from the HEAD of the data repository. Files are
 # unlocked after successful commits.
+# Add file, and any parent directories that have not been added so far.
+#
+# Optimized for the case when the file's directory already exists.
+
+add_recursive() {
+  base=$(dirname "$1")
+  echo $base/CVS
+  if [[ ! -d $base/CVS ]] ; then
+    add_recursive "$base"
+  fi
+    cvs add "$1"
+}
 
 message=$1
 shift
@@ -16,13 +28,17 @@ data_repo="$dow_root/data"
 cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
-cd $data_repo
-
 for file in "$@"; do
+  #enter module before update(fix strange cvs-update behaviour)
+  module=${file%%/*}
+  trail=${file#*/}
+  cd $cvs_repo/$module
+  cvs update -d ${trail%%/*}
+  cd $cvs_repo
+  mkdir -p $(dirname "$file")
+  cd $data_repo
   git show HEAD:$file > $cvs_repo/$file
+  cd -
+  add_recursive $file
 done
-
-cd $cvs_repo
-cvs add "$@"
-#> /dev/null/ 2>&1
 cvs commit -m "$message"
