@@ -29,7 +29,7 @@ done
 
 while (($#)); do
   out=$(cvs status $1)
-  if echo "$out" | grep 'Status: Unknown' 2> /dev/null; then
+  if echo "$out" | grep 'Status: Unknown' > /dev/null; then
     echo A1.0
   elif echo "$out" | grep 'Working revision:[[:space:]]\+[0-9]\+\(\.[0-9]\+\)*' > /dev/null; then
     echo "$out" | awk '/[ ]*Working revision:*/{print "A"$3}'
