@@ -6,34 +6,27 @@
 #   D1.5 : File is dead, and last version was 1.5
 #   A1.0 : No version of the file in the repository.
 
-#TODO: Handle retired files
-
 dow_root=$(dirname "$(pwd)")
 cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
 cd $cvs_repo
-
 #cvs doesnt support lock natively, so this script also does not. Sorry
 #but if it did , this would be the place.
 for param in "$@"
 do
-  mkdir -p  $(dirname "$param")
+  while read line
+  do
+    if [[ -z $line ]]; then
+      echo A1.0
+    else
+      isdead=$(echo "$line" | cut -c 43-46)
+      if [[  $isdead == 'dead' ]]; then
+        echo D$(echo "$line" | cut -d ' ' -f5)
+      else
+        echo A$(echo "$line" | cut -d ' ' -f5)
+      fi
+    fi
+  done <<<"$(cvs rls -d -l $param 2>/dev/null)"
 done
-cvs update -A $@
-
-while (($#)); do
-  out=$(cvs status $1)
-
-  if echo "$out" | grep 'Status: Unknown' > /dev/null; then
-    echo A1.0
-  elif echo "$out" | grep 'Working revision:[[:space:]]\+[0-9]\+\(\.[0-9]\+\)*' > /dev/null; then
-    echo "$out" | awk '/[ ]*Working revision:*/{print "A"$3}'
-  else
-    echo FAIL
-    exit 1
-  fi
-
-  shift
-done
-
+exit
