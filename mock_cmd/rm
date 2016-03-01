@@ -8,12 +8,13 @@
 message=$1
 shift
 
+utils=../utils
 cd ../mock_repo
 
 for file in "$@"; do
   if [ -e $file/log ]; then
     version=`tail -n 1 $file/log`
-    version="D${version:1}"
+    version=D$($utils/version_advance ${version:1} 1)
     echo "$message" >> $file/msg-$version
     echo $version >> $file/log
   fi
