@@ -1,0 +1,29 @@
+#!/bin/bash
+#
+# Attempt to modify outdated file should fail
+
+. lib/init
+
+cd "$DATA_REPO" &&
+mkdir p &&
+echo old > p/x &&
+git add p/x &&
+git commit -m old &&
+git branch old &&
+echo new > p/x &&
+git add p/x &&
+git commit -m new &&
+git checkout old &&
+# Attempt modification
+echo override > p/x &&
+git add p/x &&
+! git commit -m override &&
+# Attempt remove
+git rm -f p/x &&
+! git commit -m remove &&
+# File was not deleted or modified
+vcs_version=$("$CVS_CMD"/lock p/x) &&
+test "$vcs_version" = A1.2
+
+cleanup_test
+

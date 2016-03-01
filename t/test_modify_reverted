@@ -1,0 +1,40 @@
+#!/bin/bash
+#
+# Attempt to modify file with reverted version should fail
+#
+# Here we revert a file version via a synchronization commit and then check that
+# a further modification commit is rejected, for not operating on the latest
+# version.
+#
+# The synchronization commit induces the auxiliary CVS repository to get the
+# outdated version, so this test checks that the latest file version is actually
+# being taken from the CVS root, and not the local repository.
+
+. lib/init
+
+cd "$DATA_REPO" &&
+mkdir p &&
+echo old > p/x &&
+git add p/x &&
+git commit -m old &&
+echo new > p/x &&
+git add p/x &&
+git commit -m new &&
+cd "$VERSIONS_REPO" &&
+echo 1.1 > p/x &&
+git add p/x &&
+git commit -m 'revert to 1.1' &&
+cd "$DATA_REPO" &&
+# Attempt modification
+echo override > p/x &&
+git add p/x &&
+! git commit -m override &&
+# Attempt remove
+git rm -f p/x &&
+! git commit -m remove &&
+# File was not deleted or modified
+vcs_version=$("$CVS_CMD"/lock p/x) &&
+test "$vcs_version" = A1.2
+
+cleanup_test
+
