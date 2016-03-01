@@ -6,8 +6,6 @@
 #   D1.5 : File is dead, and last version was 1.5
 #   A1.0 : No version of the file in the repository.
 
-#TODO: Handle retired files
-
 dow_root=$(dirname "$(pwd)")
 cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
@@ -18,22 +16,25 @@ cd $cvs_repo
 #but if it did , this would be the place.
 for param in "$@"
 do
-  mkdir -p  $(dirname "$param")
+  if [[ ! -d $(dirname "$param") ]] ; then
+    module=${param%%/*}
+    trail=${param#*/}
+    cd $module
+    cvs update -CdA ${trail%%/*} 2> /dev/null
+    cd -
+  else
+    cvs update -CdA $param 2> /dev/null
+  fi
 done
-cvs update -A $@
 
 while (($#)); do
   out=$(cvs status $1)
-
-  if echo "$out" | grep 'Status: Unknown' > /dev/null; then
+  if echo "$out" | grep 'Status: Unknown' 2> /dev/null; then
     echo A1.0
   elif echo "$out" | grep 'Working revision:[[:space:]]\+[0-9]\+\(\.[0-9]\+\)*' > /dev/null; then
     echo "$out" | awk '/[ ]*Working revision:*/{print "A"$3}'
   else
-    echo FAIL
-    exit 1
+    echo "$out" | awk '/[ ]*Repository revision:*/{print "D"$3}'
   fi
-
   shift
 done
-
