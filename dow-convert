@@ -6,28 +6,55 @@
 #
 # Convert from layout number <from> to <to>.
 
+latest=1
+
+shopt -s extglob dotglob
+
+convert_0 () {
+  if ! [ -e data/.git -a -e versions/.git -a -e map -a -e srcdir ]; then
+    echo "error: Not a repository version 0."
+    exit 1
+  fi
+
+  echo .dow >> data/.git/info/exclude
+  mkdir data/.dow
+  mv !(data) data/.dow/
+  tmpdir=`mktemp -d`
+
+  mv data/* "$tmpdir"
+  rm -r data
+  mv "$tmpdir"/* .
+  rm -r "$tmpdir"
+
+  link=`readlink .dow/srcdir`
+
+  if ! [ ${link:0:1} = "/" ]; then
+    ln -sf "../$link" .dow/srcdir
+  fi
+
+  cd .git/hooks
+  ln -fs ../../.dow/srcdir/hooks/data/pre-commit .
+  ln -fs ../../.dow/srcdir/hooks/data/post-commit .
+  cd ../..
+}
+
 if [ $# -ne 2 ]; then
   echo "Usage: $0 <source> <dest>"
   exit 1
 fi
 
 fail=
-if ! [ "$1" -ge 0 ] 2>/dev/null || ! [ "$1" -le 1 ] 2>/dev/null; then
+if ! [ "$1" -ge 0 ] 2>/dev/null || ! [ "$1" -le $latest ] 2>/dev/null; then
   echo "error: $1 is not a supported version number."
   fail=1
 fi
-if ! [ "$2" -ge 0 ] 2>/dev/null || ! [ "$2" -le 1 ] 2>/dev/null; then
+if ! [ "$2" -ge 0 ] 2>/dev/null || ! [ "$2" -le $latest ] 2>/dev/null; then
   echo "error: $2 is not a supported version number."
   fail=1
 fi
 
 if [ -n "$fail" ]; then
   exit 1
-fi
-
-if [ "$1" -eq "$2" ]; then
-  # Nothing to do
-  exit 0
 fi
 
 if [ "$1" -gt "$2" ]; then
@@ -37,31 +64,7 @@ if [ "$1" -gt "$2" ]; then
   exit 1
 fi
 
-# Convert from 0 to 1
-
-if ! [ -e data/.git -a -e versions/.git -a -e map -a -e srcdir ]; then
-  echo "error: Not a repository version 0."
-  exit 1
-fi
-
-echo .dow >> data/.git/info/exclude
-mkdir data/.dow
-shopt -s extglob dotglob
-mv !(data) data/.dow/
-tmpdir=`mktemp -d`
-
-mv data/* "$tmpdir"
-rm -r data
-mv "$tmpdir"/* .
-rm -r "$tmpdir"
-
-link=`readlink .dow/srcdir`
-
-if ! [ ${link:0:1} = "/" ]; then
-  ln -sf "../$link" .dow/srcdir
-fi
-
-cd .git/hooks
-ln -fs ../../.dow/srcdir/hooks/data/pre-commit .
-ln -fs ../../.dow/srcdir/hooks/data/post-commit .
+for ((i=$1; i < $2; ++i)); do
+  convert_$i
+done
 
