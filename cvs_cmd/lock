@@ -11,30 +11,22 @@ cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
 
 cd $cvs_repo
-
 #cvs doesnt support lock natively, so this script also does not. Sorry
 #but if it did , this would be the place.
 for param in "$@"
 do
-  if [[ ! -d $(dirname "$param") ]] ; then
-    module=${param%%/*}
-    trail=${param#*/}
-    cd $module
-    cvs update -CdA ${trail%%/*} 2> /dev/null
-    cd -
-  else
-    cvs update -CdA $param 2> /dev/null
-  fi
+  while read line
+  do
+    if [[ -z $line ]]; then
+      echo A1.0
+    else
+      isdead=$(echo "$line" | cut -c 43-46)
+      if [[  $isdead == 'dead' ]]; then
+        echo D$(echo "$line" | cut -d ' ' -f5)
+      else
+        echo A$(echo "$line" | cut -d ' ' -f5)
+      fi
+    fi
+  done <<<"$(cvs rls -d -l $param 2>/dev/null)"
 done
-
-while (($#)); do
-  out=$(cvs status $1)
-  if echo "$out" | grep 'Status: Unknown' > /dev/null; then
-    echo A1.0
-  elif echo "$out" | grep 'Working revision:[[:space:]]\+[0-9]\+\(\.[0-9]\+\)*' > /dev/null; then
-    echo "$out" | awk '/[ ]*Working revision:*/{print "A"$3}'
-  else
-    echo "$out" | awk '/[ ]*Repository revision:*/{print "D"$3}'
-  fi
-  shift
-done
+exit
