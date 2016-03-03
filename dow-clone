@@ -1,0 +1,91 @@
+#!/bin/bash
+#
+#
+#
+# Usage: $0 <repository> [<directory>]
+#
+#Clones a dow synchronized repository into a newly created directory, this implies creating a
+#local copy of the CVS repository, cloning the version and data repository, configuration of
+#these repositories and copying the mapping structure. Creates and checks out an initial branch
+#that is forked from the cloned repository’s currently active branch.
+#
+# Pseudo-code:
+#
+#TODO: 
+# -create map integrity test.
+if [ $# -eq 0 ]; then
+  echo "Usage: $0 <repository> [<dir>]"
+  exit 1
+fi
+#detect that <repository> is a valid dow repository
+if [ ! -d $1/.dow ]; then
+  echo "error: repository '$1' does not exist"
+  exit 1
+fi
+origdir=$(readlink -f $1)
+#detect if $2 parameter is empty, if so, use filename($1) as directory name
+if [ -z $2 ]; then
+  clonedir=$(basename "$1")
+else
+  clonedir=$2
+fi
+#detect if <directory>  exists and is non-empty, if so exit.
+if [ -d "$clonedir" ]; then
+  if find "$clonedir" -mindepth 1 -print -quit | grep -q .; then
+    echo "error: destination path '$clonedir' already exists and is not an empty directory"
+    exit 1
+  fi
+fi
+vcs=$(find ${origdir}/.dow -regex ".*_cmd" -printf "%f\n" | sed "s/_cmd//g")
+
+if [ $(echo $vcs | wc -w) -ne 1 ]; then
+  echo "error: repository '$1' is corrupted. abort"
+  exit 1
+fi
+
+#dowdir shows current dow path(as long as this script stays at root level)
+dowdir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+#clone repositories
+git clone "$origdir" "$clonedir"
+echo .dow >> "${clonedir}"/.git/info/exclude
+mkdir -p "${clonedir}"/.dow
+
+if [ $? == 1 ]; then
+  echo "error: Could not create '$clonedir' directory. abort"
+  exit 1
+fi
+
+clonedir=$(readlink -f $clonedir)
+
+cd "${clonedir}"/.dow
+git clone "${origdir}"/.dow/versions
+#copy map and run integrity test to it
+cp -rf "${origdir}"/.dow/map .
+
+#place folder links
+ln -s "$dowdir" srcdir
+
+ln -s srcdir/utils .
+ln -s srcdir/${vcs}_cmd cvs_cmd
+
+#create cvs_repo directory
+#call a script in utils, which will call VCS-specific functions
+#the script in utils will check for the origin repo root and init everything
+#the api script will return repo root and create a cvs repo from it. 
+#it will have one parameter, the slave repo from which it will extract the root.
+#it may have another parameter, an option -o which will instead tell the script the root
+#file directly.
+
+#validate output. if error, abort and cleanall
+./srcdir/cvs_cmd/init -b $origdir $clonedir
+
+#place hook links
+cd versions/.git/hooks
+ln -s ../../../srcdir/hooks/versions/pre-commit .
+ln -s ../../../srcdir/hooks/versions/commit-msg .
+ln -s ../../../srcdir/hooks/versions/post-commit .
+
+cd ../../../../.git/hooks
+ln -s ../../.dow/srcdir/hooks/data/pre-commit .
+ln -s ../../.dow/srcdir/hooks/data/post-commit .
