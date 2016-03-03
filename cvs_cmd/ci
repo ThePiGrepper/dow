@@ -7,7 +7,6 @@
 #
 # File contents are copied from the HEAD of the data repository. Files are
 # unlocked after successful commits.
-i
 # Add file, and any parent directories that have not been added so far.
 #
 # Optimized for the case when the file's directory already exists.
