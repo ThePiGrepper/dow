@@ -6,6 +6,21 @@
 #   D1.5 : File is dead, and last version was 1.5
 #   A1.0 : No version of the file in the repository.
 
+#iscvsOK() - Check if your current CVS version is higher or equal to input
+#usage: $1: Threshold version(oldest compatible version)
+#returns something if OK, if not empty
+iscvsOK(){
+ tver=$(echo $1 | sed 's/[0-9]\+/0000&/g;s/0*\([0-9]\{3,\}\)/\1/g;s/\.//g')
+ cver=$(cvs -v | grep "[0-9]\+\.[0-9]\+" | cut -d ' ' -f5 | sed 's/[0-9]\+/0000&/g;s/0*\([0-9]\{3,\}\)/\1/g;s/\.//g')
+ if [[ ($cver > $tver) || ($cver == $tver) ]]; then echo 1; fi
+}
+#Minimum compatible CVS version
+minver=1.12.8
+#CVS compatibility test
+if test -z $(iscvsOK $minver); then
+  echo "Error: CVS version not supported (version $minver or higher required)"
+  exit 1
+fi
 dow_root=$(dirname "$(pwd)")
 cvs_repo="$dow_root/cvs_repo"
 export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "$dow_root/config")
