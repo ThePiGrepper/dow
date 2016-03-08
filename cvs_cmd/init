@@ -1,0 +1,27 @@
+#!/bin/bash
+#
+# Initialize CVS repository
+#
+# Usage: init [-b] orig-dow new-dow
+
+# This scripts initializes a CVS repository inside <directory>.
+# It will extract the necessary info from orig-dow and set everything inside new-dow.
+# Lastly, the brief option (-b) can be used if it is not desired to checkout the files.
+# Both parameters accept absolute paths only.
+#Obs:
+# -versions repository might be dirty before find
+
+if [ $1 == '-b' ] ; then
+  brief=-l
+  shift
+fi
+cp ${1}/.dow/config ${2}/.dow/config
+export CVSROOT=$(awk -F "=" '/^CVS.ROOTPATH[ =]/{gsub(/[ \t]*/,"",$2);print $2}' "${2}/.dow/config")
+#create repo and initialize
+mkdir -p ${2}/.dow/cvs_repo
+cd ${2}/.dow/cvs_repo
+while read file
+  do
+  cvs checkout $brief $file
+  echo "Trying to Checkout $file"
+done <<<"$(find ${2}/.dow/versions -mindepth 1 -maxdepth 1 -type d -not -iname .git -printf "%f\n")"
