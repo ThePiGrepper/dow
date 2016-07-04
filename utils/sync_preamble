@@ -1,0 +1,38 @@
+#!/bin/bash
+#
+# common preamble for sync commands
+#
+# Usage: $0 <from> <to>
+#
+# Check that we are not in detached HEAD state in the data repository.
+# Check that the current branch is fully synchronised, that is:
+#   -If it exists in the versions repository:
+#     It should point to a commit matching the one in the data repository.
+#   Else:
+#     The commit in the data repository should be already synchronised to one in the versions repository.
+#   -If the current branch is not already checked out in the versions repository:
+#     Check that we have a clean status in both repositories;
+#     Checkout the branch (create it if necessary.)
+
+data_repo=$(git rev-parse --show-toplevel 2>/dev/null)
+isgitrepo_e=$?
+
+#check that current PWD is inside a valid Dow sync repo.
+if [[ ! $isgitrepo_e || ! -d $data_repo/.dow ]]; then
+  echo "error: not a dow sync repository.abort"
+  exit 1
+fi
+
+#dow_root shows current dow path(as long as this script stays at root level)
+dow_root=$(dirname "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )")
+
+#other useful vars
+versions_repo=$dow_root/versions
+map=$dow_root/map
+utils=$dow_root/utils
+
+#check for detached HEAD
+if [[ ! $(git symbolic-ref HEAD 2>/dev/null) ]]; then
+  echo "detached HEAD.abort"
+  exit 1
+fi
