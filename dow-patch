@@ -1,6 +1,78 @@
 #!/bin/bash
+#dow-patch is a workaround for a bug during dow-put flow
+#dow-patch <commit> [<msg>]
 
-git diff --name-only HEAD~1 HEAD
+data_repo=`pwd`
+dow_root=$data_repo/.dow
+versions_repo=$dow_root/versions
+map=$dow_root/map
+utils=$dow_root/utils
+cvs_cmd=$dow_root/cvs_cmd
+cvs_repo=$dow_root/dssc_repo
+commit=$1
+msg=$2
+ref_branch=master
+#check if branch/commit exists
 
-#is_ancestor
-git merge-base --is-ancestor origin/devel HEAD
+#check that <commit> is child of devel.
+git merge-base --is-ancestor ${ref_branch} ${commit} 2>/dev/null
+if test $? -ne 0 ; then echo "${ref_branch} not an ancestor of <${commit}>. abort"; exit 1; fi
+#
+files="$(git diff --name-only ${ref_branch} ${commit})"
+#echo "$files"
+#exit
+cd ${cvs_repo}; dump="$(dssc ls -rep status -fullpath ${files})"; cd -
+newf=$(echo "$dump" | grep "Could not find object" | sed "s;.*${cvs_repo}/\(.*\);\1;")
+#nupf:need update files
+nupf=$(echo "$dump" | grep "Needs Update" | sed "s;.*${cvs_repo}/\(.*\);\1;")
+echo "$dump"
+#update to latest
+#dssc pop $nupf
+echo "==="
+echo "$newf"
+echo "==="
+echo $nupf
+#HERE its needed one ls !!!
+#cd ${cvs_repo}; dump="$(dssc ls -rep status -fullpath ${files})"; cd -
+#up-to-date files
+#change this to get all versioned files!!!
+utdf=$(echo "$dump" | grep Up-to-date | sed "s;.*\([0-9]\+\.[0-9]\+\).*${cvs_repo}/\(.*\);\1 \2;")
+
+echo "==="
+echo "$utdf"
+echo "==="
+#compare latest versions from each repo
+#!check here if version repo is clean, if not abort.
+git -C ${versions_repo} checkout ${ref_branch}
+count=0
+while IFS= read -r line; do
+  fname=$(echo ${line} | cut -d' ' -f2 )
+  fver=$(echo ${line} | cut -d' ' -f1 )
+  #check if line exists on versions
+  git -C ${versions_repo} show ${ref_branch}:${fname} 2>/dev/null
+  if test $? -ne 0; then
+    #line doesnt exist in git. warn,copy latest to versions and stage
+    echo ${fver} > ${versions_repo}/${fname}; git -C ${versions_repo} add ${fname}
+    ((count++))
+  else
+    #${utils}/version_distance
+    echo ${fver} $(git -C ${versions_repo} show ${ref_branch}:${fname})
+  fi
+done <<< "$utdf"
+if test $count -gt 0; then
+  echo "warning: ${count} files need to be updated before you do this commit. Go to versions"
+  exit 1
+fi
+#dow repo is up-to-date. so it's check-inin' time!
+#first dssc
+#checkout only existing dssc files
+#it would be nice to have an atomic checkout loop
+while IFS= read -r line; do
+  dssc co -lock -nocom ${cvs_repo}/$(echo ${line} | cut -d' ' -f2)
+done <<< "$utdf"
+#now you need to cp all the files and ci.
+while IFS= read -r line; do
+  #here
+done <<< "$utdf"
+#if all goes well and all is checked-in. update values to versions and commit
+exit
