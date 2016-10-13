@@ -42,7 +42,8 @@ echo "==="
 echo "$utdf"
 echo "==="
 #compare latest versions from each repo
-#!check here if version repo is clean, if not abort.
+#check here if version repo is clean, if not abort.
+if test ! -z $(git -C ${versions_repo} ls-files -m 2>/dev/null);then echo "repo not clean. abort"; exit 1; fi
 git -C ${versions_repo} checkout ${ref_branch}
 count=0
 while IFS= read -r line; do
