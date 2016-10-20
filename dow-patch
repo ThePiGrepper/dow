@@ -19,17 +19,11 @@ git merge-base --is-ancestor ${ref_branch} ${commit} 2>/dev/null
 if test $? -ne 0 ; then echo "${ref_branch} not an ancestor of <${commit}>. abort"; exit 1; fi
 files="$(git diff --name-only ${ref_branch}..${commit})"
 cd ${cvs_repo}; dump="$(dssc ls -rep status -fullpath ${files})"; cd - >/dev/null
-#nupf:need update files
 nupf=$(echo "$dump" | grep "Needs Update" | sed "s;.*file://\(.*\);\1;")
-echo "${dump}"
-echo "==="
-echo ">"$nupf
 #update files if needed
 if test ! -z "$nupf" ; then
   dssc pop ${nupf}
   cd ${cvs_repo}; dump="$(dssc ls -rep status -fullpath ${files})"; cd - >/dev/null
-else
-  echo "update not needed"
 fi
 #check if all files were updated
 echo "$dump" | grep -q "Needs Update"
@@ -37,14 +31,10 @@ if test ! $? -eq 1 ; then echo "could not populate latest files. abort"; exit 1;
 #up-to-date files
 utdf=$(echo "$dump" | grep file:/// | sed "s;.*\([0-9]\+\.[0-9]\+\).*${cvs_repo}/\(.*\);\1 \2;")
 newf=$(echo "$dump" | grep "Could not find object" | sed "s;.*${cvs_repo}/\(.*\);\1;")
-echo "$newf"
-echo "==="
-echo "$utdf"
-echo "====="
-#compare latest versions from each repo
 #check here if version repo is clean, if not abort.
 if test ! -z "$(git -C ${versions_repo} ls-files -m 2>/dev/null)";then echo "repo not clean. abort"; exit 1; fi
 git -C ${versions_repo} checkout ${ref_branch}
+#compare latest versions from each repo
 count=0
 while IFS= read -r line; do
   fname=$(echo ${line} | cut -d' ' -f2 )
@@ -59,7 +49,6 @@ while IFS= read -r line; do
   else
     comp=$(${utils}/version_distance $(git -C ${versions_repo} show ${ref_branch}:${fname}) ${fver})
     if test "$comp" -gt 0; then
-      #echo "${fname} needs update"
       echo ${fver} > ${versions_repo}/${fname} && git -C ${versions_repo} add ${fname}
     if test ! $? -eq 0; then echo "error: ${fname} .abort"; exit 1; else ((count++));fi
     else
@@ -67,8 +56,6 @@ while IFS= read -r line; do
         echo "this is VERY broken and should NOT be happening.abort";exit 1
       fi
     fi
-    #echo "$comp - ${fver} $(git -C ${versions_repo} show ${ref_branch}:${fname})"
-    #echo "----"
   fi
 done <<< "$utdf"
 if test $count -gt 0; then
@@ -76,16 +63,13 @@ if test $count -gt 0; then
   exit 1
 fi
 #dow repo is up-to-date. so it's check-inin' time!
-#first dssc
-#checkout only existing dssc files
-#it would be nice to have an atomic checkout loop
 temp=$(echo "$utdf"| cut -d' ' -f2)
 cd ${versions_repo}
-${cvs_cmd}/lock $temp #>/dev/null 2>&1
+${cvs_cmd}/lock $temp >/dev/null 2>&1
 if test $? -eq 1; then 
   echo "error:some file locked externally.abort"
-  ${cvs_cmd}/unlock $temp #>/dev/null 2>&1
-  #maybe report which files are locked
+  ${cvs_cmd}/unlock $temp >/dev/null 2>&1
+  #TODO maybe report which files are locked
   exit 1
 fi
 #now you need to cp all the files and ci.
@@ -96,4 +80,5 @@ fi
 git checkout ${commit}
 ${cvs_cmd}/ci "$msg" ${files}
 #if all goes well and all is checked-in. update values to versions and commit
+#TODO get new versions and update dow repo
 exit
